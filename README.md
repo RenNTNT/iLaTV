@@ -1,4 +1,4 @@
-# iLaTV 电视版 · Android 工程
+# iLaTV
 
 基于 `RenNTNT/LibreTV-TV` 改造的电视端影音应用（点播 + IPTV 直播 + 手机网页后台）。
 
