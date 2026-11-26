@@ -1,0 +1,2720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<!-- flavor 专属同步脚本：在 CSS 计算与 body 解析「之前」给 <html> 打上 .phone，
+     避免等 /api/status 异步回来才隐藏二维码导致刷新时白框闪一下。
+     电视版取 tv/assets/flavor.js（空逻辑），手机版取 phone/assets/flavor.js。 -->
+<script src="flavor.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>iLaTV 电视版</title>
+<style>
+/* ===== 主题色（v72：全局，两版共用一套色板）=====
+   服务端在 <html> 上注入 data-theme；:root 默认值 = 现有配色，
+   所以 ember / 未注入 / 老 WebView 不支持 var() 时界面与历版逐像素一致。
+   只换强调色 / 按钮 / 选中态 / 高亮 / 链接，浅底与排版色一律不动。 */
+:root{--ac-brand:#ff6b4a;--ac:#ff5a3c;--ac2:#2d7dff;--ac2b:#2f7dff;--ac-txt:#ff8a6a;--ac-lite:#ffb3a1;--ac-lite-b:#8fb8ff;--ac-ink:#0b8b8b;--ac-ink-b:#2f6fd0;--ac-soft:#e8f0ff;--ac-deep:#5a2318;--ac-deep2:#1d2c4d;--ac-rgb:255,90,60;--ac2-rgb:45,125,255}
+html[data-theme="ember"]{--ac-on:#c2410c;--ac-brand:#ff6b4a;--ac:#ff5a3c;--ac2:#2d7dff;--ac2b:#2f7dff;--ac-txt:#ff8a6a;--ac-lite:#ffb3a1;--ac-lite-b:#8fb8ff;--ac-ink:#0b8b8b;--ac-ink-b:#2f6fd0;--ac-soft:#e8f0ff;--ac-deep:#5a2318;--ac-deep2:#1d2c4d;--ac-rgb:255,90,60;--ac2-rgb:45,125,255}
+html[data-theme="mint"]{--ac-on:#0b6b4a;--ac-brand:#34d399;--ac:#0d9668;--ac2:#0ca678;--ac2b:#0ca678;--ac-txt:#4ade9e;--ac-lite:#a7f3d0;--ac-lite-b:#7fe0c0;--ac-ink:#0b8b6f;--ac-ink-b:#0a7d63;--ac-soft:#dcf7ee;--ac-deep:#0d3b30;--ac-deep2:#123c33;--ac-rgb:13,150,104;--ac2-rgb:12,166,120}
+html[data-theme="ocean"]{--ac-on:#1c5fb8;--ac-brand:#5b9bff;--ac:#2f7dff;--ac2:#1f6fd0;--ac2b:#1f6fd0;--ac-txt:#7aa9ff;--ac-lite:#b8d2ff;--ac-lite-b:#a8c8ff;--ac-ink:#1c6fd0;--ac-ink-b:#1c6fd0;--ac-soft:#e4eeff;--ac-deep:#172f55;--ac-deep2:#1c3358;--ac-rgb:47,125,255;--ac2-rgb:31,111,208}
+html[data-theme="violet"]{--ac-on:#5b3bc4;--ac-brand:#9b83ff;--ac:#7c5cff;--ac2:#6741d9;--ac2b:#6741d9;--ac-txt:#b39cff;--ac-lite:#d4c8ff;--ac-lite-b:#c4b5fd;--ac-ink:#5f3fd0;--ac-ink-b:#5f3fd0;--ac-soft:#eee9ff;--ac-deep:#2a1f4d;--ac-deep2:#2e2352;--ac-rgb:124,92,255;--ac2-rgb:103,65,217}
+html[data-theme="rose"]{--ac-on:#b32458;--ac-brand:#ff6b9c;--ac:#f0437b;--ac2:#d6336c;--ac2b:#d6336c;--ac-txt:#ff8ab0;--ac-lite:#ffc2d8;--ac-lite-b:#ffb3ce;--ac-ink:#c22b64;--ac-ink-b:#c22b64;--ac-soft:#ffe8f0;--ac-deep:#48182e;--ac-deep2:#4a1e33;--ac-rgb:240,67,123;--ac2-rgb:214,51,108}
+/* ===== 明暗模式（v73）：中性色变量，暗色默认=历版原值 ===== */
+:root{--fg-on:#fff;--ac-on:#c2410c;--ac-txt-on:var(--ac-txt);--ac-lite-on:var(--ac-lite);--ac-liteb-on:var(--ac-lite-b);--n-080b12:#080b12;--n-0a0e16:#0a0e16;--n-0b0d12:#0b0d12;--n-0d1119:#0d1119;--n-101620:#101620;--n-121722:#121722;--n-121824:#121824;--n-141a25:#141a25;--n-141b27:#141b27;--n-151b27:#151b27;--n-161b26:#161b26;--n-171d29:#171d29;--n-1a2130:#1a2130;--n-1a2231:#1a2231;--n-1b2230:#1b2230;--n-1b2331:#1b2331;--n-1b2b4a:#1b2b4a;--n-1c2740:#1c2740;--n-1e2533:#1e2533;--n-222b3a:#222b3a;--n-232b3a:#232b3a;--n-232d40:#232d40;--n-2a3446:#2a3446;--n-2a3448:#2a3448;--n-2a3a5c:#2a3a5c;--n-39445a:#39445a;--n-3d4759:#3d4759;--n-4a5261:#4a5261;--n-4d5a70:#4d5a70;--n-5c6a82:#5c6a82;--n-6b7688:#6b7688;--n-6f7d94:#6f7d94;--n-7c8aa3:#7c8aa3;--n-7f8b9e:#7f8b9e;--n-7fb2ff:#7fb2ff;--n-8b95a7:#8b95a7;--n-8b96a9:#8b96a9;--n-98a3b6:#98a3b6;--n-9aa6b8:#9aa6b8;--n-9fb6da:#9fb6da;--n-aeb9cc:#aeb9cc;--n-c2cfe2:#c2cfe2;--n-c9d3e2:#c9d3e2;--n-c9d5e6:#c9d5e6;--n-cfd8e6:#cfd8e6;--n-dbe3ef:#dbe3ef;--n-dfe6f2:#dfe6f2;--n-e8ecf4:#e8ecf4;--n-eaf1fb:#eaf1fb;--n-ff8a6b:#ff8a6b;}
+html[data-mode="light"]{--fg-on:#1c1c1e;--ac-brand:var(--ac-on);--ac-txt-on:var(--ac-on);--ac-lite-on:var(--ac-on);--ac-liteb-on:var(--ac-on);--n-080b12:#f5f6f8;--n-0a0e16:#f5f6f8;--n-0b0d12:#f5f5f8;--n-0d1119:#f5f6f8;--n-101620:#f5f6f8;--n-121722:#e9ebef;--n-121824:#e9ebef;--n-141a25:#e9ebef;--n-141b27:#e9ebef;--n-151b27:#e9ebef;--n-161b26:#e9ebef;--n-171d29:#e9ebef;--n-1a2130:#e9ebef;--n-1a2231:#e9ebef;--n-1b2230:#e9ebef;--n-1b2331:#e9ebef;--n-1b2b4a:#dadde4;--n-1c2740:#dadde4;--n-1e2533:#e9ebef;--n-222b3a:#dadee4;--n-232b3a:#dadee4;--n-232d40:#dadee4;--n-2a3446:#dadee4;--n-2a3448:#dadde4;--n-2a3a5c:#caced8;--n-39445a:#cacfd8;--n-3d4759:#cacfd8;--n-4a5261:#cbcfd7;--n-4d5a70:#536179;--n-5c6a82:#556177;--n-6b7688:#5a6372;--n-6f7d94:#576275;--n-7c8aa3:#485266;--n-7f8b9e:#4b5463;--n-7fb2ff:#384457;--n-8b95a7:#4b5363;--n-8b96a9:#4a5364;--n-98a3b6:#485365;--n-9aa6b8:#485466;--n-9fb6da:#384457;--n-aeb9cc:#384357;--n-c2cfe2:#384457;--n-c9d3e2:#384457;--n-c9d5e6:#384557;--n-cfd8e6:#384457;--n-dbe3ef:#384457;--n-dfe6f2:#384357;--n-e8ecf4:#384257;--n-eaf1fb:#384557;--n-ff8a6b:#6a4c44;}
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  img{max-width:100%;height:auto}
+  html,body{margin:0;padding:0;height:100%;background:var(--n-0b0d12,#0b0d12);color:var(--n-e8ecf4,#e8ecf4);
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",Helvetica,Arial,sans-serif;
+    overflow:hidden;user-select:none}
+  #app{height:100%;position:relative}
+  .view{position:absolute;left:0;top:0;right:0;bottom:0;display:none;overflow-y:auto;padding:2.2vh 3vw;
+    -webkit-overflow-scrolling:touch}
+  .view.on{display:block}
+  .btn{display:inline-block;border:0;outline:0;border-radius:10px;padding:12px 24px;font-size:20px;
+    background:var(--n-1e2533,#1e2533);color:var(--n-dfe6f2,#dfe6f2);cursor:pointer;transition:all .16s}
+  .btn:hover{background:var(--n-2a3448,#2a3448)}
+  .focusable{outline:none}
+  .focusable:focus,.focused{box-shadow:0 0 0 4px var(--ac,#ff5a3c),0 10px 26px rgba(var(--ac-rgb,255,90,60),.35);
+    background:var(--n-2a3448,#2a3448) !important;transform:scale(1.03)}
+  .brand{font-size:26px;font-weight:700;letter-spacing:1px;color:var(--ac-brand,#ff6b4a)}
+  .brand span{color:var(--n-8b96a9,#8b96a9);font-size:16px;font-weight:400;margin-left:10px}
+  .row{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+
+  /* 首页 */
+  .home-wrap{max-width:1180px;margin:0 auto;padding-top:8vh;padding-bottom:6vh}
+  /* 详情页片源切换 */
+  .srcbar{margin:0 0 22px}
+  .srcbar .hd{font-size:16px;color:var(--n-8b96a9,#8b96a9);margin-bottom:10px}
+  .srclist{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+  .srcbtn{margin:0 10px 10px 0;padding:10px 14px;border:0;border-radius:8px;background:var(--n-1a2130,#1a2130);color:var(--n-cfd8e6,#cfd8e6);font-size:15px}
+  .srcbtn.cur{background:var(--ac-deep,#5a2318);color:var(--ac-lite,#ffb3a1)}
+  .srcbtn:focus{background:var(--ac,#ff5a3c);color:#fff;box-shadow:0 0 0 3px rgba(var(--ac-rgb,255,90,60),.5)}
+
+  .home-title{font-size:42px;font-weight:800;color:var(--fg-on,#fff);letter-spacing:2px}
+  .search-line{display:-webkit-flex;display:flex;margin-top:36px}
+  .search-line .btn{margin-left:12px;flex:0 0 auto;-webkit-flex:0 0 auto}
+  #q{width:100%;box-sizing:border-box;-webkit-flex:0 0 auto;flex:0 0 auto;background:var(--n-161b26,#161b26);border:2px solid var(--n-232b3a,#232b3a);border-radius:12px;
+    padding:16px 20px;font-size:22px;color:var(--n-e8ecf4,#e8ecf4);outline:none}
+  #q:focus{border-color:var(--ac,#ff5a3c);box-shadow:0 0 0 3px rgba(var(--ac-rgb,255,90,60),.35);transform:none}
+  .search-wrap{position:relative;width:480px;max-width:80vw;-webkit-flex:0 0 480px;flex:0 0 480px}
+  .sug-box{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:8;
+    background:var(--n-151b27,#151b27);border:2px solid var(--n-2a3446,#2a3446);border-radius:12px;overflow:hidden;
+    box-shadow:0 16px 40px rgba(0,0,0,.55);display:none;max-height:46vh;overflow-y:auto}
+  .sug-box.on{display:block}
+  .sug-item{display:-webkit-flex;display:flex;align-items:center;padding:13px 18px;font-size:20px;
+    color:var(--n-dfe6f2,#dfe6f2);cursor:pointer;border-bottom:1px solid var(--n-222b3a,#222b3a);outline:none}
+  .sug-item:last-child{border-bottom:0}
+  .sug-item:hover,.sug-item.focused{background:var(--n-232d40,#232d40);box-shadow:inset 0 0 0 3px var(--ac,#ff5a3c)}
+  .sug-item .sg-t{-webkit-flex:1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sug-item .sg-y{color:var(--n-8b95a7,#8b95a7);font-size:16px;margin-left:14px;flex:0 0 auto}
+  .sug-item .sg-k{color:var(--ac-txt-on,#ff8a6a);font-size:15px;margin-left:12px;flex:0 0 auto;
+    background:#3a2620;border-radius:6px;padding:2px 9px}
+  .sug-empty{padding:14px 18px;color:var(--n-8b95a7,#8b95a7);font-size:18px}
+  .home-actions{display:-webkit-flex;display:flex;margin-top:26px;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+  .home-actions .btn{margin:0 14px 12px 0}
+  .tips{margin-top:40px;font-size:17px;color:var(--n-6b7688,#6b7688);line-height:2}
+  .kbd{display:inline-block;background:var(--n-1e2533,#1e2533);border-radius:5px;padding:1px 8px;color:var(--n-c9d3e2,#c9d3e2);
+    font-size:15px;margin:0 3px}
+  /* 首页右下角常驻二维码 */
+  .corner-qr{position:fixed;right:3vw;bottom:3vh;background:#fff;border:0;border-radius:14px;padding:12px 12px 8px;
+    text-align:center;z-index:3;box-shadow:0 8px 30px rgba(0,0,0,.45);cursor:pointer;font:inherit}
+  .corner-qr.focusable:focus{background:#fff !important;box-shadow:0 0 0 4px var(--ac,#ff5a3c),0 12px 34px rgba(var(--ac-rgb,255,90,60),.45);
+    transform:scale(1.03)}
+  .corner-qr img{max-width:none;width:20vh;height:20vh;min-width:130px;min-height:130px;max-width:230px;max-height:230px;
+    display:block}
+  .corner-qr .cq-tip{display:block;color:var(--n-4a5261,#4a5261);font-size:14px;margin-top:6px;line-height:1.2}
+
+  /* 结果 */
+  .bar{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+    -webkit-justify-content:space-between;justify-content:space-between;margin-bottom:16px}
+  .bar-title{font-size:24px;font-weight:600}
+  .grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -10px;padding-bottom:40px}
+  .grid .card{width:calc(16.666% - 20px);width:-webkit-calc(16.666% - 20px);margin:0 10px 20px}
+  .card{background:var(--n-141a25,#141a25);border-radius:12px;overflow:hidden;cursor:pointer;position:relative;
+    transition:transform .16s,box-shadow .16s;outline:none;border:0;padding:0;text-align:left}
+  .card .poster{position:relative;width:100%;height:0;padding-bottom:150%;background:var(--n-1b2331,#1b2331);overflow:hidden}
+  .card .poster img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
+  .card .poster .ph{position:absolute;left:0;top:0;right:0;bottom:0;display:-webkit-flex;display:flex;
+    -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+    color:var(--n-4d5a70,#4d5a70);font-size:13px;text-align:center;padding:6px;line-height:1.4}
+  .card .meta{padding:8px 9px 10px}
+  .card .nm{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .sub{font-size:12px;color:var(--n-7f8b9e,#7f8b9e);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .tag{position:absolute;left:8px;top:8px;background:rgba(var(--ac-rgb,255,90,60),.92);color:#fff;
+    font-size:12px;padding:2px 8px;border-radius:6px}
+  .card .del{position:absolute;right:8px;top:8px;width:28px;height:28px;line-height:26px;text-align:center;
+    background:rgba(10,14,20,.78);color:var(--ac-lite,#ffb3a1);border:0;border-radius:50%;font-size:20px;cursor:pointer;z-index:2}
+  .card .del:focus{background:var(--ac,#ff5a3c);color:#fff;box-shadow:none}
+  .card .prog{height:4px;background:var(--n-0b0d12,#0b0d12);margin:0 10px 10px;border-radius:2px;overflow:hidden}
+  .card .prog i{display:block;height:100%;background:var(--ac,#ff5a3c)}
+  .hisdate{font-size:12px;color:var(--n-6b7688,#6b7688);margin-top:3px}
+  .empty{padding:14vh 0;text-align:center;color:var(--n-6b7688,#6b7688);font-size:20px;line-height:2;width:100%}
+
+  /* 详情 */
+  .dt{display:-webkit-flex;display:flex;padding-bottom:30px}
+  .dt .dt-main{margin-left:30px}
+  .dt-cover{width:230px;height:320px;background:var(--n-1b2331,#1b2331);border-radius:12px;overflow:hidden;flex:0 0 auto}
+  .dt-cover img{width:100%;height:100%;object-fit:cover}
+  .dt-main{flex:1;-webkit-flex:1;min-width:0}
+  .dt-title{font-size:36px;font-weight:700}
+  .dt-info{color:var(--n-8b96a9,#8b96a9);font-size:17px;margin-top:10px;line-height:1.9}
+  .dt-desc{color:var(--n-98a3b6,#98a3b6);font-size:16px;margin-top:14px;line-height:1.8;max-height:9.4em;overflow:hidden}
+  .eps{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-top:26px}
+  .eps .ep{width:104px;margin:0 12px 12px 0}
+  .ep{background:var(--n-1a2130,#1a2130);border:0;border-radius:9px;padding:14px 6px;color:var(--n-cfd8e6,#cfd8e6);font-size:17px;
+    cursor:pointer;outline:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ep.cur{background:var(--ac-deep,#5a2318);color:var(--ac-lite,#ffb3a1)}
+
+  /* 弹层 */
+  .modal{position:absolute;left:0;top:0;right:0;bottom:0;background:rgba(4,6,10,.88);
+    display:none;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;z-index:50}
+  .modal.on{display:-webkit-flex;display:flex}
+  .mbox{background:var(--n-121722,#121722);border-radius:16px;padding:3vh 3vw;text-align:center;max-width:520px;
+    max-height:94vh;overflow-y:auto;-webkit-box-sizing:border-box;box-sizing:border-box}
+  .mbox h3{margin:0 0 8px;font-size:24px}
+  .mbox p{margin:0;color:var(--n-8b96a9,#8b96a9);font-size:15px;line-height:1.7}
+  #qrimg{width:30vh;height:30vh;max-width:280px;max-height:280px;margin:2vh auto 6px;display:block;
+    background:#fff;border-radius:10px;padding:8px;-webkit-box-sizing:border-box;box-sizing:border-box}
+  .url{color:var(--n-ff8a6b,#ff8a6b);font-size:17px;word-break:break-all;margin-top:4px}
+
+  #toast{position:absolute;left:50%;bottom:8vh;-webkit-transform:translateX(-50%);transform:translateX(-50%);
+    background:rgba(20,26,37,.96);border:1px solid var(--n-2a3448,#2a3448);color:var(--n-e8ecf4,#e8ecf4);padding:12px 22px;border-radius:10px;
+    font-size:17px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:99;white-space:nowrap}
+  #toast.on{opacity:1}
+  .clock{color:var(--n-6b7688,#6b7688);font-size:16px}
+
+
+  /* ==== CAT:START ==== */
+  /* 分类页顶部：点播搜索（与首页搜索同一套接口 / 联想，样式更紧凑） */
+  .cat-search-line{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+    -webkit-flex-wrap:wrap;flex-wrap:wrap;margin:2px 0 14px}
+  .cat-search-line .btn{margin-left:12px;flex:0 0 auto;-webkit-flex:0 0 auto;font-size:18px;padding:10px 22px}
+  .cat-search-wrap{position:relative;width:420px;max-width:52vw;-webkit-flex:0 0 420px;flex:0 0 420px}
+  #catQ{width:100%;box-sizing:border-box;-webkit-flex:0 0 auto;flex:0 0 auto;
+    background:var(--n-161b26,#161b26);border:2px solid var(--n-232b3a,#232b3a);border-radius:12px;
+    padding:12px 18px;font-size:19px;color:var(--n-e8ecf4,#e8ecf4);outline:none}
+  #catQ:focus{border-color:var(--ac,#ff5a3c);box-shadow:0 0 0 3px rgba(var(--ac-rgb,255,90,60),.35);transform:none}
+  .cat-tabs{display:-webkit-flex;display:flex;margin:2px 0 14px}
+  .cat-tab{border:0;border-radius:999px;padding:9px 30px;margin-right:14px;font-size:19px;
+    background:var(--n-1a2130,#1a2130);color:var(--n-9aa6b8,#9aa6b8);cursor:pointer;outline:none}
+  .cat-tab.on{background:var(--ac2,#2d7dff);color:#fff;font-weight:600;box-shadow:0 6px 18px rgba(var(--ac2-rgb,45,125,255),.35)}
+  .cat-tab.focusable:focus{box-shadow:0 0 0 4px var(--ac,#ff5a3c),0 8px 22px rgba(var(--ac-rgb,255,90,60),.35)}
+  .cat-filters{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-bottom:18px}
+  .cat-chip{border:0;border-radius:10px;padding:9px 20px;margin:0 10px 10px 0;font-size:17px;
+    background:var(--n-171d29,#171d29);color:var(--n-9aa6b8,#9aa6b8);cursor:pointer;outline:none}
+  .cat-chip.on{background:var(--ac2,#2d7dff);color:#fff;font-weight:600}
+  .cat-chip.focusable:focus{box-shadow:0 0 0 4px var(--ac,#ff5a3c),0 8px 22px rgba(var(--ac-rgb,255,90,60),.35)}
+  .cat-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -10px;padding-bottom:24px}
+  .cat-card{width:calc(16.666% - 20px);width:-webkit-calc(16.666% - 20px);margin:0 10px 20px;
+    background:transparent;border:0;padding:0;cursor:pointer;text-align:left;outline:none;
+    border-radius:10px;overflow:hidden;transition:transform .16s,box-shadow .16s}
+  .cat-card .cp{position:relative;width:100%;height:0;padding-bottom:150%;background:var(--n-1b2331,#1b2331);
+    border-radius:10px;overflow:hidden}
+  .cat-card .cp img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
+  .cat-card .cp .ph{position:absolute;left:0;top:0;right:0;bottom:0;display:-webkit-flex;display:flex;
+    -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+    color:var(--n-4d5a70,#4d5a70);font-size:13px;text-align:center;padding:6px;line-height:1.4}
+  .cat-card .score{position:absolute;right:6px;top:6px;background:rgba(8,12,18,.86);color:#ffcb52;
+    font-size:14px;font-weight:700;padding:3px 8px;border-radius:7px;z-index:2}
+  .cat-card .cn{font-size:15px;color:var(--n-dbe3ef,#dbe3ef);margin-top:7px;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .cat-card.focusable:focus{transform:scale(1.05);box-shadow:0 0 0 4px var(--ac,#ff5a3c),0 12px 28px rgba(var(--ac-rgb,255,90,60),.4)}
+  .cat-foot{color:var(--n-6b7688,#6b7688);font-size:16px;text-align:center;margin:4px 0 18px}
+  /* ==== CAT:END ==== */
+  /* ==== IPTV LIVE:START ==== */
+  /* ===== v74 直播边框缩放（原位 calc 规则，见下方各条）=====
+     --live-ui 管框宽 / 行高 / 徽章 + 框内字体，--epg-font 单独管节目单按钮。
+     默认 1 = 历版原样；由 applyLiveUi() 从 /api/config 回显 / 后台推送设置。 */
+  .live-view{padding:0!important;background:var(--n-080b12,#080b12)}
+  /* 关键：清除电视 WebView 给 <button> 套用的系统默认白色皮肤 */
+  .live-view button{-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent}
+  .live-cols{position:relative;display:-webkit-flex;display:flex;height:100%;width:100%}
+  .live-col{height:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;overflow:hidden}
+  /* 左右列表改为绝对定位浮层，不占 flex 宽度；播放器始终满宽。
+     这样收起界面不会改变 video 容器尺寸，避免 hls.js 在 WebView 上因 resize 黑屏。 */
+  .live-groups{position:absolute;left:0;top:0;width:calc(25% * var(--live-ui,1));height:100%;z-index:6;background:var(--n-0d1119,#0d1119);border-right:1px solid var(--n-1b2230,#1b2230);
+    -webkit-transition:opacity .2s,visibility .2s;transition:opacity .2s,visibility .2s}
+  .live-chans{position:absolute;left:calc(25% * var(--live-ui,1));top:0;
+    width:calc(25% * var(--live-ui,1));height:100%;z-index:6;background:var(--n-101620,#101620);border-right:1px solid var(--n-1b2230,#1b2230);
+    -webkit-transition:opacity .2s,visibility .2s;transition:opacity .2s,visibility .2s}
+  .live-player{-webkit-flex:1;flex:1;background:#000;position:relative;overflow:hidden}
+  .live-col-hd{-webkit-flex:0 0 auto;flex:0 0 auto;height:calc(56px * var(--live-ui,1));display:-webkit-flex;display:flex;
+    -webkit-align-items:center;align-items:center;padding:0 calc(18px * var(--live-ui,1));font-size:calc(18px * var(--live-ui,1));font-weight:600;color:var(--n-c9d5e6,#c9d5e6);
+    border-bottom:1px solid var(--n-1b2230,#1b2230);background:var(--n-0a0e16,#0a0e16)}
+  .live-col-hd #liveChanTitle{-webkit-flex:1;flex:1}
+  .live-mini{background:var(--n-1c2740,#1c2740);color:var(--n-9fb6da,#9fb6da);border:1px solid var(--n-2a3a5c,#2a3a5c);border-radius:8px;
+    padding:6px 14px;font-size:calc(14px * var(--live-ui,1));outline:none;cursor:pointer}
+  .live-mini:focus{background:var(--ac2,#2d7dff);color:#fff;box-shadow:0 0 0 3px var(--ac,#ff5a3c)}
+  .live-list{-webkit-flex:1;flex:1;overflow-y:auto;padding:calc(14px * var(--live-ui,1)) 0}
+  .live-item{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+    padding:calc(11px * var(--live-ui,1)) calc(16px * var(--live-ui,1));font-size:calc(17px * var(--live-ui,1));color:var(--n-aeb9cc,#aeb9cc);outline:none;cursor:pointer;
+    border:0;border-left:4px solid transparent;background:transparent;border-radius:0;
+    -webkit-appearance:none;appearance:none;-webkit-box-shadow:none;box-shadow:none}
+  .live-item .no{width:calc(30px * var(--live-ui,1));height:calc(30px * var(--live-ui,1));-webkit-flex:0 0 auto;flex:0 0 auto;margin-right:calc(12px * var(--live-ui,1));
+    border-radius:8px;background:var(--n-1a2231,#1a2231);color:var(--n-7c8aa3,#7c8aa3);font-size:calc(14px * var(--live-ui,1));font-weight:700;
+    display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center}
+  .live-item .nm{-webkit-flex:1;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .live-item .cnt{font-size:calc(13px * var(--live-ui,1));color:var(--n-5c6a82,#5c6a82);background:var(--n-141b27,#141b27);padding:2px 9px;border-radius:10px;margin-left:8px}
+  .live-item .star{font-size:calc(20px * var(--live-ui,1));color:var(--n-3d4759,#3d4759);margin-left:8px;-webkit-flex:0 0 auto;flex:0 0 auto}
+  .live-item .star.on{color:#ffcb52}
+  .live-item:focus{background:var(--n-1b2b4a,#1b2b4a);color:var(--fg-on,#fff);border-left-color:var(--ac,#ff5a3c)}
+  .live-item:focus .no{background:var(--ac2,#2d7dff);color:#fff}
+  .live-item.sel{color:var(--fg-on,#fff)}
+  .live-player-hd{position:absolute;left:0;right:0;top:0;height:calc(56px * var(--live-ui,1));display:-webkit-flex;display:flex;
+    -webkit-align-items:center;align-items:center;justify-content:space-between;padding:0 20px;
+    background:var(--n-0a0e16,#0a0e16);border-bottom:1px solid var(--n-1b2230,#1b2230);z-index:5;
+    -webkit-transition:opacity .25s;transition:opacity .25s}
+  .live-now{font-size:calc(20px * var(--live-ui,1));font-weight:600;color:var(--n-eaf1fb,#eaf1fb)}
+  .live-screen{position:absolute;left:0;top:0;right:0;bottom:0;background:#000;overflow:hidden}
+  .live-screen video{position:absolute;left:0;top:0;right:0;bottom:0;width:100%;height:100%;background:#000;pointer-events:none}
+  .live-placeholder{position:absolute;left:0;top:0;right:0;bottom:0;display:-webkit-flex;display:flex;
+    -webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+    color:var(--n-39445a,#39445a);font-size:calc(22px * var(--live-ui,1));pointer-events:none}
+  .live-sidebtns{position:absolute;left:10px;top:50%;transform:translateY(-50%);display:-webkit-flex;
+    display:flex;-webkit-flex-direction:column;flex-direction:column;gap:10px;z-index:3}
+  .live-side{writing-mode:vertical-rl;-webkit-writing-mode:vertical-rl;background:rgba(10,16,28,.82);
+    color:var(--n-c2cfe2,#c2cfe2);border:1px solid var(--n-2a3a5c,#2a3a5c);border-radius:9px;padding:12px 7px;font-size:calc(14px * var(--live-ui,1));
+    outline:none;cursor:pointer;letter-spacing:calc(3px * var(--live-ui,1))}
+  .live-side:focus{background:var(--ac2,#2d7dff);color:#fff;box-shadow:0 0 0 3px var(--ac,#ff5a3c)}
+  .live-ctrl{position:absolute;left:0;right:0;bottom:0;height:calc(48px * var(--live-ui,1));display:-webkit-flex;display:flex;
+    -webkit-align-items:center;align-items:center;padding:0 20px;font-size:calc(15px * var(--live-ui,1));color:var(--n-6f7d94,#6f7d94);background:var(--n-0a0e16,#0a0e16);
+    z-index:5;-webkit-transition:opacity .25s;transition:opacity .25s}
+  /* 沉浸模式：只淡出 UI，不改变 video 容器尺寸（避免 WebView 上 hls.js 因 resize 黑屏） */
+  .live-view.ui-hidden .live-groups,.live-view.ui-hidden .live-chans{opacity:0;visibility:hidden;pointer-events:none}
+  .live-view.ui-hidden .live-col-hd{opacity:0}
+  .live-view.ui-hidden .live-ctrl{opacity:0;pointer-events:none}
+  .live-view.ui-hidden .live-sidebtns{opacity:0;visibility:hidden;pointer-events:none}
+  .live-view.ui-hidden .live-player-hd{background:transparent;border-bottom:0;opacity:.18;-webkit-transition:opacity .25s;transition:opacity .25s}
+  .live-view.ui-hidden .live-player-hd .live-now{display:none}
+  .live-view.ui-hidden .live-player-hd:focus{opacity:1}
+  .live-toggle-tip{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:5;
+    background:rgba(8,12,20,.72);color:var(--n-c2cfe2,#c2cfe2);border:1px solid var(--n-2a3a5c,#2a3a5c);border-radius:20px;
+    padding:8px 20px;font-size:14px;pointer-events:none;opacity:0;-webkit-transition:opacity .25s;transition:opacity .25s}
+  .live-toggle-tip.show{opacity:1}
+  /* ==== IPTV LIVE:END ==== */
+  /* ==== SMB:START ==== */
+  .smb-bar{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+    -webkit-justify-content:space-between;justify-content:space-between;margin-bottom:14px;
+    -webkit-flex-wrap:wrap;flex-wrap:wrap}
+  .smb-bar .btn{font-size:17px;padding:9px 18px;margin:0 0 8px 10px}
+  .smb-crumb{color:var(--n-8b96a9,#8b96a9);font-size:16px;margin:0 0 16px;word-break:break-all;line-height:1.6}
+  .smb-crumb b{color:var(--ac-txt-on,#ff8a6a);font-weight:600}
+  .smb-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -10px;padding-bottom:30px}
+  .smb-card{width:calc(20% - 20px);width:-webkit-calc(20% - 20px);margin:0 10px 20px;
+    background:var(--n-141a25,#141a25);border:2px solid var(--n-232b3a,#232b3a);border-radius:12px;padding:16px 14px;
+    color:var(--n-dfe6f2,#dfe6f2);cursor:pointer;outline:none;text-align:left;position:relative;
+    -webkit-transition:transform .16s,box-shadow .16s;transition:transform .16s,box-shadow .16s}
+  .smb-card:focus,.smb-card.focused{border-color:var(--ac,#ff5a3c);background:var(--n-232d40,#232d40);
+    box-shadow:0 0 0 3px rgba(var(--ac-rgb,255,90,60),.45);transform:scale(1.03)}
+  .smb-ic{display:block;font-size:30px;line-height:1.1;margin-bottom:10px;color:var(--ac-txt-on,#ff8a6a)}
+  .smb-ic.folder{color:var(--n-7fb2ff,#7fb2ff)}
+  .smb-nm{font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .smb-sub{font-size:13px;color:var(--n-7f8b9e,#7f8b9e);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .smb-mini{position:absolute;right:8px;top:8px;border:0;border-radius:6px;background:var(--n-2a3448,#2a3448);
+    color:var(--n-cfd8e6,#cfd8e6);font-size:12px;padding:4px 8px;cursor:pointer;outline:none;z-index:2}
+  .smb-mini:focus{background:var(--ac,#ff5a3c);color:#fff;box-shadow:0 0 0 2px rgba(var(--ac-rgb,255,90,60),.6)}
+  .smb-mini.del{right:auto;left:8px}
+  .smb-mini.warn{background:#a33422;color:#fff}
+  .smb-empty{width:100%;padding:8vh 0;text-align:center;color:var(--n-6b7688,#6b7688);font-size:19px;line-height:2}
+  .smb-form{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-top:12px}
+  .smb-form label{width:50%;padding:0 8px 10px;font-size:14px;color:var(--n-9aa6b8,#9aa6b8);
+    -webkit-box-sizing:border-box;box-sizing:border-box;display:block}
+  .smb-form input{width:100%;margin-top:5px;background:var(--n-161b26,#161b26);border:2px solid var(--n-232b3a,#232b3a);
+    border-radius:8px;padding:9px 12px;font-size:16px;color:var(--n-e8ecf4,#e8ecf4);outline:none;
+    -webkit-box-sizing:border-box;box-sizing:border-box}
+  .smb-form input:focus{border-color:var(--ac,#ff5a3c);box-shadow:0 0 0 3px rgba(var(--ac-rgb,255,90,60),.3)}
+  .smb-form input.smb-input:focus{transform:none}
+  .smb-msg{color:var(--ac-lite-on,#ffb3a1);font-size:14px;min-height:20px;margin:4px 0 0}
+  .smb-tip{color:var(--n-6b7688,#6b7688);font-size:13px;line-height:1.7;margin-top:8px}
+  /* 搜索结果页顶部的 SMB 命中栏 */
+  .smb-hits{margin:0 0 18px;padding:14px 16px;background:var(--n-121824,#121824);border:2px solid var(--n-232b3a,#232b3a);border-radius:12px}
+  .smb-hits-hd{color:var(--n-9aa6b8,#9aa6b8);font-size:16px;margin-bottom:12px;font-weight:600}
+  .smb-hits-row{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:0 -6px}
+  .smb-hit{width:calc(25% - 12px);width:-webkit-calc(25% - 12px);margin:0 6px 10px;
+    background:var(--n-1a2130,#1a2130);border:2px solid var(--n-2a3448,#2a3448);border-radius:10px;padding:12px 14px;
+    color:var(--n-dfe6f2,#dfe6f2);text-align:left;outline:none;cursor:pointer;position:relative}
+  .smb-hit:focus{border-color:var(--ac,#ff5a3c);background:var(--n-232d40,#232d40);box-shadow:0 0 0 3px rgba(var(--ac-rgb,255,90,60),.45)}
+  .smb-hit .sh-ic{color:var(--ac-txt-on,#ff8a6a);font-size:16px;margin-right:8px}
+  .smb-hit .sh-nm{font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;display:block;margin-bottom:6px}
+  .smb-hit .sh-sub{font-size:12px;color:var(--n-7f8b9e,#7f8b9e);overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;display:block}
+  .smb-hits-note{width:100%;color:var(--n-6b7688,#6b7688);font-size:14px;padding:6px 6px 2px}
+  /* ==== SMB:END ==== */
+
+  /* ===== 手机版（.phone 作用于 <html> 或 <body> 均可）竖屏 / 触摸适配 =====
+     只有手机版由 /api/status 给 body 加 .phone，电视版完全不受影响 */
+  .phone #cornerQr{display:none!important}
+  .phone .home-wrap{padding-top:4vh;padding-bottom:3vh;max-width:100%}
+  .phone .brand{font-size:22px}
+  .phone .brand span{font-size:13px;margin-left:6px}
+  .phone .home-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:20px}
+  .phone .home-actions .btn{margin:0;width:100%;font-size:16px;padding:11px 8px}
+  .phone .btn{font-size:16px;padding:10px 14px}
+  .phone .view{padding:14px 12px}
+  .phone .tips{font-size:12px;line-height:1.7;margin-top:22px}
+  /* 底部「遥控器…」「播放中…」两行在手机版去掉，只留致谢与项目地址 */
+  .phone .tips > div:nth-child(1),
+  .phone .tips > div:nth-child(2){display:none!important}
+  /* 手机版首页：致谢与项目地址贴到屏幕底部。
+     #home 是铺满屏幕的 absolute 容器，改成纵向 flex 后让 .tips 用 margin-top:auto 沉底；
+     电视版不走这些规则，仍是原来的 margin-top:40px 紧跟按钮。 */
+  /* 必须限定 .on：#home 是 ID 选择器，优先级高于 .view{display:none}，
+     不限定会让首页在切到分类/详情/搜索时「永远显示」，和当前页叠在一起（v13 引入的重叠 bug）。 */
+  .phone #home.on{display:-webkit-flex;display:flex;
+    -webkit-flex-direction:column;flex-direction:column}
+  .phone #home:not(.on){display:none}
+  .phone #home .home-wrap{display:-webkit-flex;display:flex;
+    -webkit-flex-direction:column;flex-direction:column;
+    -webkit-flex:1;flex:1;width:100%;box-sizing:border-box}
+  .phone #home .tips{margin-top:auto;padding-bottom:2px}
+  /* 项目地址按「正常文字」显示：与上方致谢同色(var(--n-6b7688,#6b7688))、同字号(12px)、无下划线。
+     #netinfo 自带 .clock(font-size:16px)，必须在这里显式压回 12px，否则比上面一行大。
+     元素仍是 <a>，点击跳系统浏览器的功能保留，只是不再带链接外观。
+     电视版没有 .phone，走的是 .clock 原样，一个字都不动。 */
+  .phone #netinfo.phone-link{display:inline;color:var(--n-6b7688,#6b7688);
+    font-size:12px;line-height:1.7;text-decoration:none;cursor:default;
+    -webkit-tap-highlight-color:transparent}
+  /* 搜索行与下方网格严格左右对齐：输入框自适应撑满，搜索按钮定宽 */
+  .phone .search-line{gap:10px}
+  .phone .search-wrap{position:relative;width:auto;max-width:none;min-width:0;
+    -webkit-flex:1 1 auto;flex:1 1 auto}
+  .phone .search-line .btn{margin-left:0;-webkit-flex:0 0 auto;flex:0 0 auto;
+    width:92px;padding:11px 8px;font-size:16px}
+  .phone #q{padding:11px 14px;font-size:16px;border-radius:10px}
+  .phone .bar{flex-wrap:wrap;gap:8px}
+  /* --- 影视分类 / 搜索结果 / 观看记录：竖屏三列网格 ---
+     原来用 flex + flex-basis:50%，但卡片自带 10px 左右 margin，两卡合计超过 100%
+     被 flex-wrap 挤成「每行一张」→ 单列巨幅海报。改 CSS Grid 彻底消除 margin 溢出。 */
+  .phone .grid,.phone .cat-grid{display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding-bottom:24px}
+  .phone .grid .card,.phone .cat-grid .cat-card{width:auto!important;max-width:none!important;
+    margin:0!important;flex:none!important;-webkit-flex:none!important}
+  .phone .cat-card .cp{border-radius:9px}
+  .phone .cat-card .score{font-size:12px;padding:2px 6px;right:5px;top:5px}
+  .phone .cat-card .cn{font-size:13px;margin-top:6px}
+  .phone .cat-card.focusable:focus{transform:none;box-shadow:0 0 0 3px var(--ac,#ff5a3c)}
+  .phone .card .nm{font-size:13px}
+  .phone .card .sub{font-size:11px}
+  /* 分类页顶部：搜索行与网格左对齐，三个控件一行不换行 */
+  .phone .cat-search-line{flex-wrap:nowrap;gap:8px;margin:0 0 12px}
+  .phone .cat-search-wrap{position:relative;width:auto;max-width:none;min-width:0;
+    -webkit-flex:1 1 auto;flex:1 1 auto}
+  .phone .cat-search-line .btn{margin-left:0;width:68px;flex:0 0 68px!important;
+    -webkit-flex:0 0 68px!important;padding:10px 4px;font-size:14px}
+  .phone #catQ{padding:10px 12px;font-size:14px;border-radius:10px}
+  .phone .cat-tabs{margin:0 0 10px}
+  .phone .cat-tab{padding:8px 18px;margin-right:8px;font-size:15px}
+  .phone .cat-filters{margin-bottom:12px;gap:8px}
+  .phone .cat-chip{padding:8px 12px;margin:0;font-size:14px;border-radius:9px}
+  .phone .cat-foot{font-size:13px;margin:2px 0 12px;cursor:pointer;padding:8px 0 16px}
+  /* 详情页选集：手机版每行 5 集。电视版 .eps 仍是 flex + 104px 定宽，完全不变。
+     选集按钮本身为适配窄格把字号收到 13px（仅 .phone .eps .ep）；
+     上方搜索框 / tab / 筛选 / 片名 / 标题等所有其它字号一概不动。 */
+  .phone .eps{display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:16px}
+  .phone .eps .ep{width:auto!important;max-width:none!important;margin:0!important;
+    padding:10px 0;font-size:13px}
+  /* 加载中 / 空态提示占满整行，不被挤进第一格 */
+  .phone .eps>.empty{grid-column:1/-1}
+  /* 详情页片源按钮：与选集按钮严格同宽 —— 同一套 5 列 grid / gap:8px / minmax(0,1fr)，
+     因此单个 .srcbtn 与 .ep 宽度逐像素相等、左右边界也对齐。
+     长片源名（如「非凡资源 · 更新至第191集」）在 71px 窄格里改为自动换行、字号 15→12px；
+     grid 行内默认 stretch，同排按钮高度自动拉齐。电视版仍 flex + 15px 原样。 */
+  .phone .srclist{display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0}
+  .phone .srcbtn{width:auto!important;max-width:none!important;margin:0!important;
+    padding:10px 2px;font-size:12px;line-height:1.35;white-space:normal;
+    word-break:break-all;min-height:38px;box-sizing:border-box}
+  /* 详情页封面：按「每行 2 张」的单张尺寸缩小（约屏宽一半，2:3 比例），
+     右侧标题/简介区随之变宽。电视版 .dt-cover 仍 230×320 定宽，完全不变。 */
+  .phone .dt-cover{width:calc(50vw - 18px);height:calc(75vw - 27px);
+    flex:0 0 auto;-webkit-flex:0 0 auto;border-radius:10px}
+  .phone .dt .dt-main{margin-left:12px}
+  .phone .mbox{max-width:94vw;padding:20px 16px}
+  .phone .live-groups{width:calc(42% * var(--live-ui,1))}
+  .phone .live-chans{left:calc(42% * var(--live-ui,1));width:calc(58% * var(--live-ui,1))}
+  .phone .live-player{display:none}
+  .phone #btnSettings{display:inline-block!important}
+
+
+/* ===== 亮色模式：播放器仍是黑画面，黑区内文字保持浅色 ===== */
+html[data-mode="light"] input::placeholder{color:#9aa6b8;-webkit-text-fill-color:#9aa6b8}
+html[data-mode="light"] .live-player,
+html[data-mode="light"] .live-screen,
+html[data-mode="light"] .live-screen video{background:#000}
+html[data-mode="light"] .live-player-hd,
+html[data-mode="light"] .live-ctrl{background:rgba(10,16,28,.92);color:#c9d5e6}
+html[data-mode="light"] .live-now{color:#eaf1fb}
+html[data-mode="light"] .live-side{color:#c2cfe2}
+html[data-mode="light"] .live-placeholder{color:#8b96a9}
+html[data-mode="light"] #toast{color:#eaf1fb}
+html[data-mode="light"] .live-toggle-tip{color:#c2cfe2}
+html[data-mode="light"] .srcrow .del,
+html[data-mode="light"] .srcrow .mini.del{color:#ff8a6b}
+  /* 节目单按钮单独用 --epg-font，不受边框缩放牵连（放最后覆盖 .live-side） */
+  .live-side#btnEpg{font-size:calc(14px * var(--epg-font,1))}
+</style>
+<script src="hls.min.js"></script>
+<script src="flv.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- 首页 -->
+  <div id="home" class="view on">
+    <div class="home-wrap">
+      <div class="brand">iLaTV <span>电视版 2.0</span></div>
+      <div class="home-title">看点什么？</div>
+      <div class="search-line">
+        <div class="search-wrap">
+          <input id="q" class="focusable" type="text" placeholder="输入影片名称，例如：流浪地球" autocomplete="off">
+          <div id="sugBox" class="sug-box"></div>
+        </div>
+        <button class="btn focusable" id="btnSearch">搜索</button>
+      </div>
+      <div class="home-actions">
+        <button class="btn focusable" id="btnCategory">影视分类</button>
+        <button class="btn focusable" id="btnHistory">观看记录</button>
+        <button class="btn focusable" id="btnSmb">SMB 网盘</button>
+        <button class="btn focusable" id="btnLive">IPTV 直播</button>
+        <button class="btn focusable" id="btnClear">清除本地缓存</button>
+        <button class="btn focusable" id="btnSettings" style="display:none">设置</button>
+      </div>
+      <div class="tips">
+        <div>遥控器：<span class="kbd">方向键</span> 移动 · <span class="kbd">OK</span> 确认 · <span class="kbd">返回</span> 后退</div>
+        <div>播放中：<span class="kbd">OK</span> 暂停/继续 · <span class="kbd">←</span><span class="kbd">→</span> 快退/快进 15 秒 · <span class="kbd">↓</span> 选集</div>
+        <div>本项目基于LibreSpark/LibreTV 修改制作</div>
+        <div id="netinfo" class="clock">https://github.com/RenNTNT/iLaTV</div>
+      </div>
+    </div>
+    <button class="corner-qr focusable" id="cornerQr" data-nav="corner" type="button" title="手机扫码管理">
+      <img id="cornerQrImg" alt="手机扫码">
+      <span class="cq-tip">扫码管理</span>
+    </button>
+  </div>
+
+  <!-- 搜索结果 -->
+  <div id="results" class="view">
+    <div class="bar">
+      <div class="bar-title" id="resTitle">搜索结果</div>
+      <button class="btn focusable" id="btnBack1">返回</button>
+    </div>
+    <!-- SMB 网盘文件名搜索结果：与在线片源并行请求，异步填充，不阻塞在线结果 -->
+    <div id="smbResBar" class="smb-hits" style="display:none">
+      <div class="smb-hits-hd" id="smbHitsHd">SMB 网盘 · 搜索中…</div>
+      <div class="smb-hits-row" id="smbHitsRow"></div>
+    </div>
+    <div id="resGrid" class="grid"></div>
+    <div id="resEmpty" class="empty" style="display:none"></div>
+  </div>
+
+  <!-- 观看记录 -->
+  <div id="history" class="view">
+    <div class="bar">
+      <div class="bar-title">观看记录</div>
+      <button class="btn focusable" id="btnBackHis">返回</button>
+    </div>
+    <div id="hisGrid" class="grid"></div>
+    <div id="hisEmpty" class="empty" style="display:none">还没有观看记录<br>看过的影片会自动记录在这里</div>
+  </div>
+
+
+
+  <!-- ==== CAT HTML:START ==== -->
+  <div id="category" class="view">
+    <!-- 顶部点播搜索：直接搜现有片源，和首页搜索共用 /api/search 与豆瓣联想 -->
+    <div class="cat-search-line">
+      <div class="cat-search-wrap">
+        <input id="catQ" class="focusable" type="text" placeholder="搜索影片 / 剧集名称" autocomplete="off">
+        <div id="catSugBox" class="sug-box"></div>
+      </div>
+      <button class="btn focusable" id="btnCatSearch" type="button">搜索</button>
+      <button class="btn focusable" id="btnCatBack" type="button">返回</button>
+    </div>
+    <div class="cat-tabs" id="catTabs">
+      <button class="cat-tab focusable on" data-kind="movie" type="button">电影</button>
+      <button class="cat-tab focusable" data-kind="tv" type="button">剧集</button>
+    </div>
+    <div class="cat-filters" id="catFilters"></div>
+    <div class="cat-grid" id="catGrid"></div>
+    <div class="cat-foot" id="catFoot"></div>
+  </div>
+  <!-- ==== CAT HTML:END ==== -->
+  <!-- IPTV 直播 -->
+  <div id="live" class="view live-view">
+    <div class="live-cols">
+      <!-- 左：分组 -->
+      <div class="live-col live-groups" id="liveGroupsCol">
+        <div class="live-list" id="liveGroups"></div>
+      </div>
+      <!-- 中：频道 -->
+      <div class="live-col live-chans" id="liveChansCol">
+        <div class="live-list" id="liveChans"></div>
+      </div>
+      <!-- 右：播放 -->
+      <div class="live-col live-player" id="livePlayerCol">
+        <div class="live-player-hd">
+          <span class="live-now" id="liveNow">未选择频道</span>
+          <button class="btn focusable" id="btnBackLive">返回</button>
+        </div>
+        <div class="live-screen" id="liveScreen">
+          <video id="liveVideo" playsinline webkit-playsinline muted></video>
+          <div class="live-placeholder" id="livePlaceholder">选择一个频道开始观看</div>
+          <div class="live-sidebtns">
+            <button class="live-side focusable" id="btnLiveRefresh">更多</button>
+            <button class="live-side focusable" id="btnEpg">节目单</button>
+          </div>
+          <div class="live-toggle-tip" id="liveTip">按 OK / 点屏幕 显示频道列表</div>
+        </div>
+        <div class="live-ctrl" id="liveCtrl">
+          <span id="liveStatus">按 OK 收藏 / 取消收藏 · ← → 切换栏目</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 详情 -->
+  <div id="detail" class="view">
+    <div class="bar">
+      <div class="bar-title" id="dtName">详情</div>
+      <button class="btn focusable" id="btnBack2">返回</button>
+    </div>
+    <div class="dt">
+      <div class="dt-cover"><img id="dtCover" alt=""></div>
+      <div class="dt-main">
+        <div class="dt-title" id="dtTitle"></div>
+        <div class="dt-info" id="dtInfo"></div>
+        <div class="dt-desc" id="dtDesc"></div>
+      </div>
+    </div>
+    <div class="srcbar">
+      <div class="hd">片源（<span id="srcCount">1</span> 个） · 当前：<span id="srcCur">—</span></div>
+      <div class="srclist" id="srcList"></div>
+    </div>
+    <div class="bar"><div class="bar-title" style="font-size:20px">选集</div></div>
+    <div class="eps" id="eps"></div>
+  </div>
+
+  <!-- SMB 网盘 -->
+  <div id="smb" class="view">
+    <div class="smb-bar">
+      <div class="bar-title" id="smbTitle">SMB 网盘</div>
+      <div>
+        <button class="btn focusable" id="btnSmbAdd">添加网盘</button>
+        <button class="btn focusable" id="btnSmbUp" style="display:none">返回上级</button>
+        <button class="btn focusable" id="btnSmbList" style="display:none">网盘列表</button>
+        <button class="btn focusable" id="btnSmbBack">返回</button>
+      </div>
+    </div>
+    <div class="smb-crumb" id="smbCrumb">读取中…</div>
+    <div class="smb-grid" id="smbGrid"></div>
+  </div>
+
+  <!-- SMB 添加 / 编辑 -->
+  <div class="modal" id="smbModal">
+    <div class="mbox" style="width:680px;max-width:680px;text-align:left">
+      <h3 id="sfTitle" style="text-align:center">添加 SMB 网盘</h3>
+      <div class="smb-form">
+        <label>名称（可留空）<input class="focusable smb-input" id="sfName" type="text" placeholder="例如：家里 NAS"></label>
+        <label>服务器地址<input class="focusable smb-input" id="sfHost" type="text" placeholder="192.168.1.10 或 nas.local"></label>
+        <label>端口<input class="focusable smb-input" id="sfPort" type="number" placeholder="445"></label>
+        <label>共享名<input class="focusable smb-input" id="sfShare" type="text" placeholder="例如：video"></label>
+        <label>域（可留空）<input class="focusable smb-input" id="sfDomain" type="text" placeholder="WORKGROUP"></label>
+        <label>用户名（可留空）<input class="focusable smb-input" id="sfUser" type="text" placeholder="匿名留空"></label>
+        <label>密码（可留空）<input class="focusable smb-input" id="sfPass" type="password" placeholder="编辑时留空表示不修改"></label>
+        <label>起始目录<input class="focusable smb-input" id="sfRoot" type="text" placeholder="/"></label>
+      </div>
+      <div class="smb-msg" id="sfMsg"></div>
+      <div class="smb-tip">支持 SMB1/2/3、中文目录名与非 445 端口。密码只保存在电视本机，不回传到页面；
+        在手机后台「播放设置 → SMB 网盘」里添加会更方便输入。</div>
+      <div style="margin-top:16px;text-align:center">
+        <button class="btn focusable" id="sfSave" style="background:var(--ac,#ff5a3c)">保存</button>
+        <button class="btn focusable" id="sfCancel" style="margin-left:12px;background:var(--n-232b3a,#232b3a);color:var(--n-cfd8e6,#cfd8e6)">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 二维码 -->
+  <div class="modal" id="qrModal">
+    <div class="mbox">
+      <h3>手机扫码管理</h3>
+      <p>手机连同一个 WiFi，扫码打开管理页<br>可以搜片推送、增删片源、设置跳过片头片尾</p>
+      <img id="qrimg" alt="二维码">
+      <div class="url" id="qrurl"></div>
+      <p style="margin-top:16px;color:var(--n-6b7688,#6b7688);font-size:14px">扫码后打不开？确认手机与电视在同一 WiFi；也可以手动在手机浏览器输入上面的地址</p>
+      <div style="margin-top:18px"><button class="btn focusable" id="btnCloseQr">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- 清除缓存确认 -->
+  <div class="modal" id="clearModal">
+    <div class="mbox">
+      <h3>清除本地缓存？</h3>
+      <p>将清除以下内容：<br>· 播放进度与「继续观看」记录<br>· 网络缓存（图片等临时文件）</p>
+      <p style="color:var(--ac-lite-on,#ffb3a1);font-size:14px;margin-top:6px">当前缓存：<span id="cacheUsage">统计中…</span></p>
+      <p style="color:var(--n-6b7688,#6b7688);font-size:14px">不会影响：片源列表、跳过片头片尾等设置（配置保留）。<br>缓存上限 50 MB，超限自动清理最旧数据。</p>
+      <div style="margin-top:18px">
+        <button class="btn focusable" id="btnClearYes" style="background:var(--ac,#ff5a3c)">清除</button>
+        <button class="btn focusable" id="btnClearNo" style="margin-left:12px;background:var(--n-232b3a,#232b3a);color:var(--n-cfd8e6,#cfd8e6)">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script id="douban-data">window.__DOUBAN={"movie":{"热门":[{"n":"可能的爱","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935488630.jpg"},{"n":"黑球","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936994837.jpg"},{"n":"忘年之约","r":"7.5","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2933363281.jpg"},{"n":"另一个妈妈","r":"5.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2935858295.jpg"},{"n":"懦夫","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2932617088.jpg"},{"n":"突如其来","r":"7.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931445409.jpg"},{"n":"八仙！","r":"8.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934074566.jpg"},{"n":"野兽之心","r":"7.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933185536.jpg"},{"n":"逃出布迪秀","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934286660.jpg"},{"n":"黄金时段","r":"6.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934707795.jpg"},{"n":"空枪","r":"7.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934946788.jpg"},{"n":"不存在的罪人","r":"5.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934844988.jpg"},{"n":"生化危机：爆发夜","r":"7.3","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936442661.jpg"},{"n":"老千4：别西卜之歌","r":"6.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935460102.jpg"},{"n":"杯雪·一战成名","r":"7.5","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2936719035.jpg"},{"n":"末世行者","r":"6.0","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2931652234.jpg"},{"n":"每时每刻","r":"7.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2932646643.jpg"},{"n":"敦煌英雄","r":"5.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936069048.jpg"},{"n":"茫然女王","r":"7.9","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2930593644.jpg"},{"n":"罗斯","r":"8.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935294362.jpg"},{"n":"奥德赛","r":"8.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933569626.jpg"},{"n":"密档","r":"6.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935700232.jpg"},{"n":"狗狗的完美圣诞节","r":"6.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937207031.jpg"},{"n":"蜘蛛侠：崭新之日","r":"7.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934276912.jpg"}],"最新":[{"n":"余命一年买男人","r":"6.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935853700.jpg"},{"n":"忘年之约","r":"7.5","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2933363281.jpg"},{"n":"伯顿先生","r":"6.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2918273243.jpg"},{"n":"狗狗的完美圣诞节","r":"6.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937207031.jpg"},{"n":"小丑回魂：德里故事","r":"6.0","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2937139054.jpg"},{"n":"失控撞劫","r":"6.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2937026866.jpg"},{"n":"偷天父子兵","r":"5.7","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2936095806.jpg"},{"n":"非常治疗师","r":"6.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2935259056.jpg"},{"n":"火柴盒大电影","r":"6.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935696033.jpg"},{"n":"人性本兽","r":"5.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935862659.jpg"},{"n":"天启Z：新世界","r":"5.5","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937090321.jpg"},{"n":"另一个妈妈","r":"5.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2935858295.jpg"},{"n":"挖掘者","r":"6.9","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934063747.jpg"},{"n":"复活男","r":"5.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934454757.jpg"},{"n":"不存在的罪人","r":"5.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934844988.jpg"},{"n":"致命录像带：混音带","r":"5.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935914663.jpg"},{"n":"杯雪·一战成名","r":"7.5","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2936719035.jpg"},{"n":"敦煌英雄","r":"5.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936069048.jpg"},{"n":"大学炸弹客","r":"6.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936115679.jpg"},{"n":"爱情假说","r":"6.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935295277.jpg"},{"n":"老千4：别西卜之歌","r":"6.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935460102.jpg"},{"n":"理智与情感","r":"6.5","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936957901.jpg"},{"n":"野兽之心","r":"7.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933185536.jpg"},{"n":"一击3","r":"6.3","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2935341851.jpg"}],"经典":[{"n":"肖申克的救赎","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936346968.jpg"},{"n":"霸王别姬","r":"9.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2911205318.jpg"},{"n":"泰坦尼克号","r":"9.5","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p457760035.jpg"},{"n":"千与千寻","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2557573348.jpg"},{"n":"疯狂动物城","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2924128964.jpg"},{"n":"阿甘正传","r":"9.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p510876253.jpg"},{"n":"楚门的世界","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p479682972.jpg"},{"n":"星际穿越","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2614988097.jpg"},{"n":"海上钢琴师","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2914698334.jpg"},{"n":"这个杀手不太冷","r":"9.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2913554676.jpg"},{"n":"盗梦空间","r":"9.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p513344864.jpg"},{"n":"寻梦环游记","r":"9.1","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2505426431.jpg"},{"n":"哈利·波特与魔法石","r":"9.2","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2913781448.jpg"},{"n":"三傻大闹宝莱坞","r":"9.2","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p579729551.jpg"},{"n":"美丽人生","r":"9.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2578474613.jpg"},{"n":"我不是药神","r":"9.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2527119568.jpg"},{"n":"怦然心动","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p501177648.jpg"},{"n":"机器人总动员","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934742160.jpg"},{"n":"放牛班的春天","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2884280708.jpg"},{"n":"无间道","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2597979873.jpg"},{"n":"辛德勒的名单","r":"9.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p492406163.jpg"},{"n":"触不可及","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p1454261925.jpg"},{"n":"控方证人","r":"9.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2927451337.jpg"},{"n":"摔跤吧！爸爸","r":"9.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2401676338.jpg"}],"豆瓣高分":[{"n":"八仙！","r":"8.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934074566.jpg"},{"n":"给阿嬷的情书","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931851430.jpg"},{"n":"奥德赛","r":"8.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933569626.jpg"},{"n":"可能的爱","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935488630.jpg"},{"n":"肖申克的救赎","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936346968.jpg"},{"n":"哪吒之魔童闹海","r":"8.4","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2916323291.jpg"},{"n":"疯狂动物城","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2924128964.jpg"},{"n":"千与千寻","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2557573348.jpg"},{"n":"挽救计划","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931370692.jpg"},{"n":"寻梦环游记","r":"9.1","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2505426431.jpg"},{"n":"海上钢琴师","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2914698334.jpg"},{"n":"泰坦尼克号","r":"9.5","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p457760035.jpg"},{"n":"楚门的世界","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p479682972.jpg"},{"n":"星际穿越","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2614988097.jpg"},{"n":"疯狂动物城2","r":"8.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2926605350.jpg"},{"n":"我不是药神","r":"9.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2527119568.jpg"},{"n":"阿甘正传","r":"9.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p510876253.jpg"},{"n":"霸王别姬","r":"9.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2911205318.jpg"},{"n":"哪吒之魔童降世","r":"8.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2563780504.jpg"},{"n":"这个杀手不太冷","r":"9.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2913554676.jpg"},{"n":"绿皮书","r":"8.9","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2531065411.jpg"},{"n":"盗梦空间","r":"9.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p513344864.jpg"},{"n":"怦然心动","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p501177648.jpg"},{"n":"浪浪山小妖怪","r":"8.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2923770138.jpg"}],"华语":[{"n":"八仙！","r":"8.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934074566.jpg"},{"n":"给阿嬷的情书","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931851430.jpg"},{"n":"空枪","r":"7.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934946788.jpg"},{"n":"哪吒之魔童闹海","r":"8.4","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2916323291.jpg"},{"n":"浪浪山小妖怪","r":"8.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2923770138.jpg"},{"n":"捕风追影","r":"8.0","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2924069675.jpg"},{"n":"南京照相馆","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2924276740.jpg"},{"n":"功夫女足","r":"5.9","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2933860063.jpg"},{"n":"长安的荔枝","r":"7.5","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2926288464.jpg"},{"n":"飞驰人生3","r":"7.1","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929427346.jpg"},{"n":"镖人：风起大漠","r":"7.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929760596.jpg"},{"n":"年会不能停！2","r":"6.1","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934583425.jpg"},{"n":"罗小黑战记2","r":"8.7","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2923537864.jpg"},{"n":"震耳欲聋","r":"7.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2928430959.jpg"},{"n":"我，许可","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2932103692.jpg"},{"n":"唐探1900","r":"6.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2917556416.jpg"},{"n":"抓特务","r":"7.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933198755.jpg"},{"n":"惊蛰无声","r":"5.7","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929759786.jpg"},{"n":"火遮眼","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2932757540.jpg"},{"n":"戏台","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2923749086.jpg"},{"n":"消失的人","r":"6.9","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931601069.jpg"},{"n":"夜王","r":"7.7","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2929673775.jpg"},{"n":"寒战1994","r":"6.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931924492.jpg"},{"n":"特立独行","r":"6.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2933638302.jpg"}],"欧美":[{"n":"奥德赛","r":"8.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933569626.jpg"},{"n":"末世行者","r":"6.0","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2931652234.jpg"},{"n":"蜘蛛侠：崭新之日","r":"7.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934276912.jpg"},{"n":"生化危机：爆发夜","r":"7.3","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936442661.jpg"},{"n":"挽救计划","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931370692.jpg"},{"n":"疯狂动物城2","r":"8.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2926605350.jpg"},{"n":"痴迷","r":"7.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934049524.jpg"},{"n":"黑球","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936994837.jpg"},{"n":"F1：狂飙飞车","r":"8.7","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922238175.jpg"},{"n":"逃出布迪秀","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934286660.jpg"},{"n":"野兽之心","r":"7.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933185536.jpg"},{"n":"玩具总动员5","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2933391462.jpg"},{"n":"阿凡达：火与烬","r":"7.5","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2925983114.jpg"},{"n":"一战再战","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2925146362.jpg"},{"n":"后室","r":"6.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2933327977.jpg"},{"n":"穿普拉达的女王2","r":"6.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2930952195.jpg"},{"n":"家弑服务","r":"7.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2932673659.jpg"},{"n":"碟中谍8：最终清算","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2921570919.jpg"},{"n":"新·驯龙高手","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922512455.jpg"},{"n":"罪人","r":"7.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2920268831.jpg"},{"n":"另一个妈妈","r":"5.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2935858295.jpg"},{"n":"惊天魔盗团3","r":"5.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2926399098.jpg"},{"n":"突如其来","r":"7.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931445409.jpg"},{"n":"呼啸山庄","r":"6.2","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2930238411.jpg"}],"动画":[{"n":"千与千寻","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2557573348.jpg"},{"n":"哪吒之魔童降世","r":"8.4","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2563780504.jpg"},{"n":"超级无敌掌门狗：企鹅的复仇","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2914283404.jpg"},{"n":"疯狂动物城","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2924128964.jpg"},{"n":"寻梦环游记","r":"9.1","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2505426431.jpg"},{"n":"你的名字。","r":"8.5","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2910701461.jpg"},{"n":"飞屋环游记","r":"9.1","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p485887754.jpg"},{"n":"机器人总动员","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934742160.jpg"},{"n":"神偷奶爸","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p792776858.jpg"},{"n":"哈尔的移动城堡","r":"9.1","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2907583906.jpg"},{"n":"超能陆战队","r":"8.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2224568669.jpg"},{"n":"白蛇：缘起","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2544313786.jpg"},{"n":"疯狂原始人","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1867084027.jpg"},{"n":"狮子王","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p726659067.jpg"},{"n":"天空之城","r":"9.2","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2892409201.jpg"},{"n":"驯龙高手","r":"8.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2210954024.jpg"},{"n":"心灵奇旅","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2595591069.jpg"},{"n":"头脑特工队","r":"8.9","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2874927470.jpg"},{"n":"冰雪奇缘","r":"8.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2151245053.jpg"},{"n":"大鱼海棠","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2932950007.jpg"},{"n":"怪兽电力公司","r":"8.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2513247938.jpg"},{"n":"冰川时代","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1910895719.jpg"},{"n":"西游记之大圣归来","r":"8.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2255028780.jpg"},{"n":"功夫熊猫","r":"8.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1597238857.jpg"}]},"tv":{"热门":[{"n":"两京十五日","r":"","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937593221.jpg"},{"n":"我的有罪之人","r":"9.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935797899.jpg"},{"n":"今天是太阳雨","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935903589.jpg"},{"n":"后会友期","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936933522.jpg"},{"n":"小城良方","r":"8.1","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936709341.jpg"},{"n":"伟大的长征","r":"8.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936465959.jpg"},{"n":"谷雨","r":"6.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936897680.jpg"},{"n":"青春共体","r":"7.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937427662.jpg"},{"n":"嫁金钗","r":"6.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936594583.jpg"},{"n":"宝珠","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2937533554.jpg"},{"n":"十万狂花入梦来","r":"","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2935866961.jpg"},{"n":"现在就出发 第四季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936261227.jpg"},{"n":"蒸蒸日上","r":"7.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936476679.jpg"},{"n":"罪蓝之路","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937233193.jpg"},{"n":"Doctor X：白色黑手党时代","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935916102.jpg"},{"n":"幻视任务","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934961457.jpg"},{"n":"多喜一家人","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937033477.jpg"},{"n":"无声的回响","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2908208835.jpg"},{"n":"走马上任","r":"6.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922760095.jpg"},{"n":"扯淡电影史","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937460613.jpg"},{"n":"尚公主","r":"6.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936873942.jpg"},{"n":"午夜规则","r":"7.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937159421.jpg"},{"n":"玫瑰战争","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937183448.jpg"},{"n":"不栩此行","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937570342.jpg"}],"美剧":[{"n":"青春共体","r":"7.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937427662.jpg"},{"n":"幻视任务","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934961457.jpg"},{"n":"绝望写手 第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2930970048.jpg"},{"n":"怪物：丽兹·波顿的故事","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935880473.jpg"},{"n":"指环王：力量之戒 第三季","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936827360.jpg"},{"n":"黑帮领地 第二季","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934927616.jpg"},{"n":"猫头鹰谋杀案","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2912718194.jpg"},{"n":"狂怒追缉 第一季","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933573106.jpg"},{"n":"终极名单 第二季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935094693.jpg"},{"n":"嗜血法医：杀魔复生 第二季","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936372578.jpg"},{"n":"怪奇物语 第五季","r":"9.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2927467335.jpg"},{"n":"12 12 12","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936648118.jpg"},{"n":"绝命毒师  第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1579021082.jpg"},{"n":"老友记 第十季","r":"9.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2187822907.jpg"},{"n":"旺达幻视","r":"9.0","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2628036511.jpg"},{"n":"权力的游戏 第八季","r":"6.0","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2552503815.jpg"},{"n":"疑犯追踪 第五季","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2340869957.jpg"},{"n":"镶金理想","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937263740.jpg"},{"n":"校园之外 第一季","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2932988314.jpg"},{"n":"都是她的错","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2926850313.jpg"},{"n":"女巫阿加莎","r":"7.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2912648378.jpg"},{"n":"寡妇湾 第一季","r":"7.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2931976030.jpg"},{"n":"摩登家庭 第十一季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2584872902.jpg"},{"n":"镀金时代 第四季","r":"8.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936500231.jpg"}],"日剧":[{"n":"有人刚好提起我吗？","r":"8.3","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936110521.jpg"},{"n":"白色巨塔","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2892515613.jpg"},{"n":"非自然死亡","r":"9.5","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2554348811.jpg"},{"n":"重启人生","r":"9.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2886331572.jpg"},{"n":"深夜食堂6","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936517289.jpg"},{"n":"地雷格力高","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936706099.jpg"},{"n":"相遇骤雨中：温柔的细雨","r":"9.1","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2936175235.jpg"},{"n":"欢迎回来，初恋。","r":"7.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936193042.jpg"},{"n":"地狱占星师","r":"8.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2931001014.jpg"},{"n":"由你主动吻我吧","r":"8.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937109048.jpg"},{"n":"机动搜查队404","r":"9.1","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2610559445.jpg"},{"n":"LOST10","r":"7.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936303589.jpg"},{"n":"东京爱情故事","r":"9.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2912998495.jpg"},{"n":"初恋","r":"8.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2883789917.jpg"},{"n":"悠长假期","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2162760408.jpg"},{"n":"政盗鲁邦","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936192947.jpg"},{"n":"平屋慢生活","r":"8.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2925523886.jpg"},{"n":"3年A班：从现在起，大家都是人质","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2926296167.jpg"},{"n":"杀死你的旅途 第二季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937108883.jpg"},{"n":"X医生：外科医生大门未知子 第1季","r":"8.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2103421840.jpg"},{"n":"住宅区的两人","r":"9.2","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2912606931.jpg"},{"n":"人生交换","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935784027.jpg"},{"n":"逃避虽可耻但有用","r":"8.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2390274478.jpg"},{"n":"热点","r":"8.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2922538947.jpg"}],"经典":[{"n":"嫁金钗","r":"6.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936594583.jpg"},{"n":"宝珠","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2937533554.jpg"},{"n":"十万狂花入梦来","r":"","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2935866961.jpg"},{"n":"现在就出发 第四季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936261227.jpg"},{"n":"蒸蒸日上","r":"7.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936476679.jpg"},{"n":"罪蓝之路","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937233193.jpg"},{"n":"Doctor X：白色黑手党时代","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935916102.jpg"},{"n":"幻视任务","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934961457.jpg"},{"n":"多喜一家人","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937033477.jpg"},{"n":"无声的回响","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2908208835.jpg"},{"n":"走马上任","r":"6.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922760095.jpg"},{"n":"扯淡电影史","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937460613.jpg"},{"n":"尚公主","r":"6.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936873942.jpg"},{"n":"午夜规则","r":"7.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937159421.jpg"},{"n":"玫瑰战争","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937183448.jpg"},{"n":"不栩此行","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937570342.jpg"},{"n":"绝望写手 第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2930970048.jpg"},{"n":"怪物：丽兹·波顿的故事","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935880473.jpg"},{"n":"指环王：力量之戒 第三季","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936827360.jpg"},{"n":"黑帮领地 第二季","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934927616.jpg"},{"n":"猫头鹰谋杀案","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2912718194.jpg"},{"n":"狂怒追缉 第一季","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933573106.jpg"},{"n":"终极名单 第二季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935094693.jpg"},{"n":"嗜血法医：杀魔复生 第二季","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936372578.jpg"}],"豆瓣高分":[{"n":"多喜一家人","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937033477.jpg"},{"n":"无声的回响","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2908208835.jpg"},{"n":"走马上任","r":"6.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922760095.jpg"},{"n":"扯淡电影史","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937460613.jpg"},{"n":"尚公主","r":"6.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936873942.jpg"},{"n":"午夜规则","r":"7.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937159421.jpg"},{"n":"玫瑰战争","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937183448.jpg"},{"n":"不栩此行","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937570342.jpg"},{"n":"绝望写手 第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2930970048.jpg"},{"n":"怪物：丽兹·波顿的故事","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935880473.jpg"},{"n":"指环王：力量之戒 第三季","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936827360.jpg"},{"n":"黑帮领地 第二季","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934927616.jpg"},{"n":"猫头鹰谋杀案","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2912718194.jpg"},{"n":"狂怒追缉 第一季","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933573106.jpg"},{"n":"终极名单 第二季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935094693.jpg"},{"n":"嗜血法医：杀魔复生 第二季","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936372578.jpg"},{"n":"怪奇物语 第五季","r":"9.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2927467335.jpg"},{"n":"12 12 12","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936648118.jpg"},{"n":"绝命毒师  第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1579021082.jpg"},{"n":"老友记 第十季","r":"9.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2187822907.jpg"},{"n":"旺达幻视","r":"9.0","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2628036511.jpg"},{"n":"权力的游戏 第八季","r":"6.0","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2552503815.jpg"},{"n":"疑犯追踪 第五季","r":"9.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2340869957.jpg"},{"n":"镶金理想","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937263740.jpg"}],"华语":[{"n":"小城良方","r":"8.1","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2936709341.jpg"},{"n":"伟大的长征","r":"8.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936465959.jpg"},{"n":"谷雨","r":"6.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936897680.jpg"},{"n":"青春共体","r":"7.4","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937427662.jpg"},{"n":"嫁金钗","r":"6.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936594583.jpg"},{"n":"宝珠","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2937533554.jpg"},{"n":"十万狂花入梦来","r":"","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2935866961.jpg"},{"n":"现在就出发 第四季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936261227.jpg"},{"n":"蒸蒸日上","r":"7.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936476679.jpg"},{"n":"罪蓝之路","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937233193.jpg"},{"n":"Doctor X：白色黑手党时代","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935916102.jpg"},{"n":"幻视任务","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934961457.jpg"},{"n":"多喜一家人","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937033477.jpg"},{"n":"无声的回响","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2908208835.jpg"},{"n":"走马上任","r":"6.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922760095.jpg"},{"n":"扯淡电影史","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937460613.jpg"},{"n":"尚公主","r":"6.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936873942.jpg"},{"n":"午夜规则","r":"7.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937159421.jpg"},{"n":"玫瑰战争","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937183448.jpg"},{"n":"不栩此行","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937570342.jpg"},{"n":"绝望写手 第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2930970048.jpg"},{"n":"怪物：丽兹·波顿的故事","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935880473.jpg"},{"n":"指环王：力量之戒 第三季","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936827360.jpg"},{"n":"黑帮领地 第二季","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934927616.jpg"}],"动画":[{"n":"蒸蒸日上","r":"7.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936476679.jpg"},{"n":"罪蓝之路","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937233193.jpg"},{"n":"Doctor X：白色黑手党时代","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935916102.jpg"},{"n":"幻视任务","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2934961457.jpg"},{"n":"多喜一家人","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937033477.jpg"},{"n":"无声的回响","r":"","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2908208835.jpg"},{"n":"走马上任","r":"6.6","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2922760095.jpg"},{"n":"扯淡电影史","r":"8.6","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937460613.jpg"},{"n":"尚公主","r":"6.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936873942.jpg"},{"n":"午夜规则","r":"7.7","p":"https://img2.doubanio.com/view/photo/s_ratio_poster/public/p2937159421.jpg"},{"n":"玫瑰战争","r":"7.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937183448.jpg"},{"n":"不栩此行","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2937570342.jpg"},{"n":"绝望写手 第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2930970048.jpg"},{"n":"怪物：丽兹·波顿的故事","r":"7.3","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935880473.jpg"},{"n":"指环王：力量之戒 第三季","r":"7.5","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936827360.jpg"},{"n":"黑帮领地 第二季","r":"7.8","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2934927616.jpg"},{"n":"猫头鹰谋杀案","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2912718194.jpg"},{"n":"狂怒追缉 第一季","r":"8.3","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2933573106.jpg"},{"n":"终极名单 第二季","r":"8.0","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2935094693.jpg"},{"n":"嗜血法医：杀魔复生 第二季","r":"9.1","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936372578.jpg"},{"n":"怪奇物语 第五季","r":"9.2","p":"https://img9.doubanio.com/view/photo/s_ratio_poster/public/p2927467335.jpg"},{"n":"12 12 12","r":"","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2936648118.jpg"},{"n":"绝命毒师  第五季","r":"9.7","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1579021082.jpg"},{"n":"老友记 第十季","r":"9.8","p":"https://img3.doubanio.com/view/photo/s_ratio_poster/public/p2187822907.jpg"}]}};</script>
+<script>
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------- 基础工具
+  function $(id) { return document.getElementById(id); }
+  function on(el, ev, fn) { if (el) el.addEventListener(ev, fn, false); }
+  function show(v, yes) { var el = $(v); if (!el) return; el.className = el.className.replace(/\s*\bon\b/g, '') + (yes ? ' on' : ''); }
+  function text(id, s) { var el = $(id); if (el) el.textContent = s == null ? '' : s; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'on';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = ''; }, 2200);
+  }
+  function fmt(sec) {
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    var m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  /** 读取全部观看记录（localStorage 中 lp_ 开头），按最近观看排序 */
+  function getPlayRecords() {
+    var items = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('lp_') === 0) {
+          try {
+            var o = JSON.parse(localStorage.getItem(k));
+            if (o && o.name) { o._key = k; items.push(o); }
+          } catch (e) {}
+        }
+      }
+    } catch (e) {}
+    items.sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    return items;
+  }
+  function req(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, url, true);
+    x.timeout = 30000;
+    if (body) x.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      var data = null;
+      try { data = JSON.parse(x.responseText); } catch (e) { data = null; }
+      cb(data, x.status);
+    };
+    x.ontimeout = function () { cb(null, 0); };
+    x.onerror = function () { cb(null, 0); };
+    x.send(body ? JSON.stringify(body) : null);
+  }
+
+  // ---------------------------------------------------------------- 焦点导航（D-pad）
+  function focusables(root) {
+    var nl = (root || document).querySelectorAll('.focusable');
+    var out = [];
+    for (var i = 0; i < nl.length; i++) {
+      // 用 getClientRects 判断是否真正渲染：position:fixed 元素的 offsetParent 恒为 null
+      if (nl[i].getClientRects().length && !nl[i].disabled) out.push(nl[i]);
+    }
+    return out;
+  }
+  function moveFocus(dir, root) {
+    var cur = document.activeElement;
+    var all = focusables(root);
+    if (!all.length) return;
+    if (!cur || !cur.className || String(cur.className).indexOf('focusable') < 0) { all[0].focus(); return; }
+    var cr = cur.getBoundingClientRect();
+    var cx = cr.left + cr.width / 2, cy = cr.top + cr.height / 2;
+    // 右下角二维码属于「兜底入口」：先忽略它，正常区域没有落点时才把焦点交给它，
+    // 这样从搜索框按下仍然是「观看记录」，只有走到最底部再按 ↓ 才进二维码。
+    function pick(skipCorner) {
+      var best = null, bestScore = 1e9;
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (el === cur) continue;
+        if (skipCorner && el.getAttribute && el.getAttribute('data-nav') === 'corner') continue;
+        var r = el.getBoundingClientRect();
+        var ex = r.left + r.width / 2, ey = r.top + r.height / 2;
+        var dx = ex - cx, dy = ey - cy;
+        if (dir === 'left' && dx > -8) continue;
+        if (dir === 'right' && dx < 8) continue;
+        if (dir === 'up' && dy > -8) continue;
+        if (dir === 'down' && dy < 8) continue;
+        var px = (dir === 'left' || dir === 'right') ? Math.abs(dx) : Math.abs(dy);
+        var sx = (dir === 'left' || dir === 'right') ? Math.abs(dy) : Math.abs(dx);
+        var score = px + sx * 2.2;
+        if (score < bestScore) { bestScore = score; best = el; }
+      }
+      return best;
+    }
+    var best = pick(true) || pick(false);
+    if (best) best.focus();
+  }
+
+  // ---------------------------------------------------------------- 分类页逐层导航
+  // 分类页从上到下是 4 层：搜索行 / 电影剧集 / 筛选目录（热门…动画） / 海报卡片。
+  // 通用几何算法会因为搜索框很宽而斜跳到中间某个筛选按钮、甚至直接落到海报，
+  // 这里改成严格「一层一层」：上下键只在相邻层之间移动，左右键在本层内逐项移动。
+  function catRowOf(el) {
+    if (!el) return -1;
+    if (el.id === 'catQ' || el.id === 'btnCatSearch' || el.id === 'btnCatBack') return 0;
+    var p = el.parentNode, guard = 0;
+    while (p && guard++ < 8) {
+      var c = String(p.className || '');
+      if (p.id === 'catSearchLine' || c.indexOf('cat-search-line') >= 0) return 0;
+      if (p.id === 'catTabs') return 1;
+      if (p.id === 'catFilters') return 2;
+      if (p.id === 'catGrid') return 3;
+      p = p.parentNode;
+    }
+    return -1;
+  }
+  function catRowItems(r) {
+    if (r === 0) return [$('catQ'), $('btnCatSearch'), $('btnCatBack')];
+    if (r === 1) return document.querySelectorAll('#catTabs .cat-tab');
+    if (r === 2) return document.querySelectorAll('#catFilters .cat-chip');
+    if (r === 3) return document.querySelectorAll('#catGrid .cat-card');
+    return [];
+  }
+  function catOn() {
+    return $('category') && $('category').className.indexOf('on') >= 0;
+  }
+  function catFocusFirst(list) {
+    if (list && list.length) { try { list[0].focus(); } catch (e) {} }
+  }
+  /**
+   * 影视分类页默认焦点：当前生效的筛选标签（默认「热门」）。
+   * 先把两个搜索框都 blur 掉，避免一进分类页 / 从结果页返回就弹软键盘；
+   * 用户主动按 ↑ 两层回到搜索框时才聚焦输入框（那时弹键盘是预期行为）。
+   */
+  function catFocusDefault() {
+    try { if ($('q')) $('q').blur(); } catch (e) {}
+    try { if ($('catQ')) $('catQ').blur(); } catch (e) {}
+    try { sugHide(); } catch (e) {}
+    var box = $('catFilters');
+    var chip = box && (box.querySelector('.cat-chip.on') || box.querySelector('.cat-chip'));
+    if (chip) { try { chip.focus(); } catch (e) {} }
+    else catFocusFirst(catRowItems(2));
+  }
+  function catMoveFocus(dir) {
+    var cur = document.activeElement;
+    var r = catRowOf(cur);
+    if (r < 0) { catFocusFirst(catRowItems(0)); return true; }
+
+    var items = catRowItems(r);
+    // 左右：本层内逐项移动；卡片区是多行网格，仍交给几何算法按列走
+    if (dir === 'left' || dir === 'right') {
+      if (r === 3) { moveFocus(dir); return true; }
+      var idx = -1;
+      for (var i = 0; i < items.length; i++) if (items[i] === cur) { idx = i; break; }
+      if (idx < 0) { catFocusFirst(items); return true; }
+      var n = idx + (dir === 'right' ? 1 : -1);
+      if (n >= 0 && n < items.length) { try { items[n].focus(); } catch (e) {} }
+      return true;
+    }
+
+    if (dir === 'down') {
+      if (r === 3) { moveFocus('down'); return true; }  // 海报区逐行浏览 / 触底加载更多
+      // 搜索行按 ↓ 直接落到「热门」那一排目录（跳过一次只跳一层，不斜跳、不跨到海报）
+      var t = (r === 0) ? 2 : r + 1;
+      catFocusFirst(catRowItems(t));
+      return true;
+    }
+
+    // up：到顶停住，其余回上一层
+    if (r === 0) return true;
+    if (r === 3) {
+      var cards = catRowItems(3);
+      var firstTop = cards.length ? cards[0].getBoundingClientRect().top : 0;
+      // 第一行海报按 ↑ 回筛选目录；其它行按 ↑ 回上一行海报
+      if (cur.getBoundingClientRect().top <= firstTop + 8) {
+        catFocusFirst(catRowItems(2)); return true;
+      }
+      moveFocus('up'); return true;
+    }
+    if (r === 2) {
+      // 回「电影/剧集」层时落在当前生效的那个 tab
+      var onTab = document.querySelector('#catTabs .cat-tab.on');
+      if (onTab) { try { onTab.focus(); } catch (e) {} }
+      else catFocusFirst(catRowItems(1));
+      return true;
+    }
+    catFocusFirst(catRowItems(r - 1));   // 电影/剧集 → 搜索框
+    return true;
+  }
+
+  // 焦点移动时自动滚动到可见区域（电视上榜单/长列表需要）
+  document.addEventListener('focusin', function (e) {
+    if (catRestoring) return;   // 加载更多重建 DOM 时不要自动滚动、不要重复触发加载
+    var el = e.target;
+    if (!el || el === document.body) return;
+    try {
+      if (el.scrollIntoViewIfNeeded) el.scrollIntoViewIfNeeded();
+      else if (el.scrollIntoView) el.scrollIntoView(false);
+    } catch (err) {}
+    // 分类页：焦点落在最后一行卡片时，自动加载下一页（遥控器连续按 ↓ 即可无限浏览）
+    if (el.className && String(el.className).indexOf('cat-card') >= 0 && el.getAttribute('data-cat-last') === '1') {
+      loadMoreCat();
+    }
+  }, false);
+
+  // ---------------------------------------------------------------- 视图
+  var viewStack = ['home'];
+  function go(name, push) {
+    var names = ['home', 'results', 'history', 'detail', 'category', 'live', 'smb'];
+    for (var i = 0; i < names.length; i++) show(names[i], names[i] === name);
+    if (push !== false) viewStack.push(name);
+    document.body.scrollTop = 0;
+  }
+  function back() {
+    // 离开直播页时停止网页播放器
+    var cur = viewStack[viewStack.length - 1];
+    if (cur === 'live' && typeof stopLive === 'function') stopLive();
+    if (viewStack.length > 1) viewStack.pop();
+    var prev = viewStack[viewStack.length - 1] || 'home';
+    go(prev, false);
+    if (prev === 'results') { /* 结果保留 */ }
+    if (prev === 'category') {
+      // 从搜索结果 / 详情返回分类页也落在「热门」，不再聚焦输入框、不再弹软键盘
+      catFocusDefault();
+    }
+    if (prev === 'home') {
+      var f = $('btnSearch'); if (f) f.focus();
+      // 回到首页时刷新「继续观看」，让刚看过/手机推送的记录立即出现
+      syncHistory(renderContinue);
+    }
+  }
+  window.__onBack = function () {
+    if ($('qrModal').className.indexOf('on') >= 0) { closeQr(); return; }
+    if ($('clearModal').className.indexOf('on') >= 0) { closeClear(); return; }
+    if ($('smbModal').className.indexOf('on') >= 0) { closeSmbForm(); return; }
+    if (smbOn()) { smbBack(); return; }
+    // 搜索框（首页或分类页）联想展开时，返回键先收联想，不直接退页
+    if (sugOpen && sugItems.length) { sugHide(); return; }
+    // 直播页返回键：界面显示时先收起进入沉浸；已沉浸时再按返回才离开直播页
+    if ($('live') && $('live').className.indexOf('on') >= 0) {
+      if (!liveUiHidden) { hideLiveUi(true, true); return; }
+    }
+    if (viewStack.length > 1) { back(); return; }
+    // 已经在首页：普通应用直接退出；桌面应用是 HOME，finish 会被系统反复拉起，
+    // 所以只给提示，不退出（要回系统桌面请在系统设置里更换默认桌面，或后台切回普通应用）
+    if (cfg.launcherMode === 'home') {
+      toast('当前是桌面应用，按 Home 键回首页；可在手机后台切回普通应用');
+      return;
+    }
+    try {
+      if (window.appHost && window.appHost.exit) window.appHost.exit();
+    } catch (e) {}
+  };
+
+  // 作为桌面应用时按 Home 键：系统把 MAIN+HOME 送到 MainActivity.onNewIntent，
+  // 原生层调这里把页面栈重置回首页（分类、搜索结果、详情页都收起）
+  window.__homePressed = function () {
+    if (cfg.launcherMode !== 'home') return;
+    viewStack = ['home'];
+    go('home', false);
+    var f = $('btnSearch'); if (f) try { f.focus(); } catch (e) {}
+    syncHistory(renderContinue);
+  };
+
+  // ---------------------------------------------------------------- 状态
+  var cfg = { skipIntro: 0, skipOutro: 0, sources: [], filterAdult: true, playEngine: 'auto',
+              launcherMode: 'normal', autoBoot: false };
+  var lanUrl = window.__phoneOrigin || 'http://127.0.0.1:9600';
+  // ---- 全局主题色（v72）：服务端已在 <html> 首帧注入 data-theme，
+  //      这里只做「配置回显」与「后台改主题后的即时推送」两处兜底同步。
+  var THEME_LIST = ['ember', 'mint', 'ocean', 'violet', 'rose'];
+  var MODE_LIST = ['dark', 'light'];
+  function applyTheme(t) {
+    if (THEME_LIST.indexOf(t) < 0) t = 'ember';
+    document.documentElement.setAttribute('data-theme', t);
+  }
+  // 明暗模式（v73）：dark = 历版深色底，light = 亮色底；服务端也会首帧注入
+  function applyMode(m) {
+    if (MODE_LIST.indexOf(m) < 0) m = 'dark';
+    document.documentElement.setAttribute('data-mode', m);
+  }
+  // 直播边框缩放（v74）：网页直播页的分组/频道两栏宽度 + 框内字体，
+  // 节目单按钮字体单独一个百分比。50~200，默认 100 = 历版原样。
+  function clampPct(v) {
+    v = parseInt(v, 10);
+    if (isNaN(v) || v < 50) return 100;
+    if (v > 200) return 200;
+    return v;
+  }
+  function applyLiveUi(ui, epg) {
+    var r = document.documentElement.style;
+    r.setProperty('--live-ui', (clampPct(ui) / 100).toFixed(2));
+    r.setProperty('--epg-font', (clampPct(epg) / 100).toFixed(2));
+  }
+
+  var isPhone = false;   // 由 /api/status 判定：手机版隐藏扫码、走竖屏布局
+  /* 手机版「片源管理 → 启用/停用」：停用的源不出现在搜索结果和详情页片源切换里。
+     enabled 字段随 /api/config 原样存取；电视版不定义 __phoneOrigin，恒返回原数组。 */
+  function phoneSrcEnabled(key) {
+    if (!window.__phoneOrigin) return true;
+    var s = cfg && cfg.sources && cfg.sources[key];
+    return !s || s.enabled !== false;
+  }
+  function phoneFilterList(list) {
+    if (!window.__phoneOrigin || !list) return list || [];
+    var out = [];
+    for (var i = 0; i < list.length; i++) if (phoneSrcEnabled(list[i].sourceKey)) out.push(list[i]);
+    return out;
+  }
+  var lastResults = [];
+  var curDetail = null;   // {item, episodes, index}
+  var lastPush = 0;
+
+  // ------------------------------------------------------------ 缓存管家（配置豁免 / 上限 50MB）
+  // 说明：配置（片源、跳过片头片尾、过滤等）来自服务端 /api/config，不占本地缓存、永不被清理。
+  // 计入预算的「缓存」= 播放进度记录(lp_) + WebView 网络/图片缓存。总量超过 CACHE_LIMIT 时，
+  // 按从旧到新自动清理：先删最旧的播放记录，再清网络缓存，直到降到 CACHE_TARGET 以下。
+  var CACHE_LIMIT = 50 * 1024 * 1024;    // 50MB 硬上限
+  var CACHE_TARGET = 40 * 1024 * 1024;   // 清理目标（留缓冲，避免频繁触发）
+  var lastCacheBytes = -1;               // 最近一次读取到的缓存占用（字节）
+  var posterSeen = {};                   // 已加载海报 URL 去重表（图片加载事件自动登记）
+  var POSTER_AVG = 60 * 1024;            // 单张海报平均约 60KB
+
+  function posterCount() {
+    var n = 0;
+    for (var k in posterSeen) { if (posterSeen.hasOwnProperty(k)) n++; }
+    return n;
+  }
+  function posterBytes() { return posterCount() * POSTER_AVG; }
+  function estimatedCacheBytes() { return Math.round((posterBytes() + localCacheBytes()) / 2); }
+  // 统一监听：所有成功加载的图片（海报）登记 URL，去重计数（load 事件用捕获阶段，不冒泡也能捕获）
+  document.addEventListener('load', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'IMG' && t.src) { posterSeen[t.src] = 1; }
+  }, true);
+
+  function cachePlayRecords() {
+    var arr = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!k || k.indexOf('lp_') !== 0) continue;   // 只处理播放记录，配置类一律不碰
+        var o = null;
+        try { o = JSON.parse(localStorage.getItem(k)); } catch (e) {}
+        var str = localStorage.getItem(k) || '';
+        arr.push({ k: k, ts: (o && (o.ts || o.time)) || 0, bytes: str.length * 2 });
+      }
+    } catch (e) {}
+    return arr;
+  }
+  function localCacheBytes() {
+    var b = 0, recs = cachePlayRecords();
+    for (var i = 0; i < recs.length; i++) b += recs[i].bytes;
+    return b;
+  }
+  function fmtBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(1) + ' MB';
+  }
+  // 占用估算：WebView 读不到真实 HTTP 缓存，按「已加载海报数 × 单张均值 + 播放记录」估算，
+  // 会随浏览增长、清除后归零。显示为约数，避免再出现「显示 0 却能清很多」的矛盾。
+  function readCacheUsage(cb) {
+    cb(estimatedCacheBytes());
+  }
+  function updateCacheLabel() {
+    var el = $('cacheUsage');
+    if (!el) return;
+    var b = lastCacheBytes < 0 ? estimatedCacheBytes() : lastCacheBytes;
+    el.textContent = '约 ' + fmtBytes(b) + ' / ' + fmtBytes(CACHE_LIMIT) +
+      '（' + posterCount() + ' 张海报，配置不计入）';
+  }
+  // 超限自动清理：从旧到新删播放记录 → 仍超则清网络缓存；配置始终保留
+  function enforceCacheLimit(done) {
+    readCacheUsage(function (bytes) {
+      lastCacheBytes = bytes; updateCacheLabel();
+      if (bytes <= CACHE_LIMIT) { if (done) done(false); return; }
+      var recs = cachePlayRecords().sort(function (a, b) { return a.ts - b.ts; });
+      var removed = 0;
+      for (var i = 0; i < recs.length && bytes > CACHE_TARGET; i++) {
+        try { localStorage.removeItem(recs[i].k); removed++; } catch (e) {}
+        bytes -= recs[i].bytes;
+      }
+      // 播放记录删完仍超限：清 WebView 网络/图片缓存（配置在服务端，不受影响）
+      req('GET', '/api/clearcache', null, function () {
+        posterSeen = {}; lastCacheBytes = -1;
+        if (done) done(true);
+      });
+    });
+  }
+  function checkCacheBudget() {
+    enforceCacheLimit(function (cleaned) {
+      if (cleaned) toast('缓存超过 ' + fmtBytes(CACHE_LIMIT) + '，已自动清理（配置已保留）');
+    });
+  }
+
+  function loadConfig(cb) {
+    req('GET', '/api/config', null, function (d) {
+      if (d && d.sources) cfg = d;
+      // 换台反转存在 SharedPreferences 里，经 /api/config 回显；网页降级直播面板也跟着反转
+      if (d) cfg.channelReverse = !!d.channelReverse;
+      // 桌面应用模式下首页不能 finish()：作为 HOME 被结束会被系统反复拉起
+      if (d) cfg.launcherMode = (d.launcherMode === 'home') ? 'home' : 'normal';
+      if (d) cfg.autoBoot = !!d.autoBoot;
+      if (d && d.theme) applyTheme(d.theme);   // 全局主题色：与后台/设置页保持一致
+      if (d && d.mode) applyMode(d.mode);      // 亮色 / 暗色背景
+      if (d && d.liveUiScale) applyLiveUi(d.liveUiScale, d.epgFontScale);  // 边框 / 字体大小
+      req('GET', '/api/status', null, function (s) {
+        if (s && s.lan && !window.__phoneOrigin) lanUrl = s.lan;
+        isPhone = !!(s && s.isPhone);
+        if (isPhone) {
+          // 手机版：去掉扫码、改竖屏布局、标题与桌面名区分、露出本机「设置」入口
+          document.body.classList.add('phone');
+          document.title = 'iLaTV 手机版 2.0';
+          // 顶部品牌行：手机版 + 版本号（电视版走 else 分支，一个字都不动）
+          var bp = document.querySelector('.brand span');
+          if (bp) bp.textContent = '手机版 2.0';
+          var bs = $('btnSettings'); if (bs) bs.style.display = '';
+          // 底部网址改成可点击链接：系统浏览器打开（原生层拦截外部导航）。
+          // 电视版走 else 分支，#netinfo 仍是纯文本 div，DOM 一个字不动。
+          var net = $('netinfo');
+          if (net && net.tagName !== 'A') {
+            var a = document.createElement('a'), u = (net.textContent || '').trim();
+            a.id = 'netinfo';
+            a.className = net.className + ' phone-link';
+            a.href = u;
+            a.textContent = u;
+            net.parentNode.replaceChild(a, net);
+          }
+        } else {
+          // 电视版：保持原来的扫码二维码
+          var cq = $('cornerQrImg');
+          if (cq) cq.src = '/api/qr?text=' + encodeURIComponent(lanUrl);
+        }
+        checkCacheBudget();   // 启动即检查缓存上限
+        if (cb) cb();
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------- 搜索
+  var searching = false;
+  var smbHits = [], smbSearchToken = 0;
+  function isResultsOn() { return $('results') && $('results').className.indexOf('on') >= 0; }
+  function doSearch(wd) {
+    wd = (wd || '').replace(/^\s+|\s+$/g, '');
+    if (!wd) { toast('请输入片名'); return; }
+    if (searching) return;
+    searching = true;
+    text('resTitle', '正在搜索：' + wd);
+    $('resGrid').innerHTML = '';
+    $('resEmpty').style.display = 'none';
+    // 从「影视分类」页顶部搜索框 / 分类卡片发起时，把分类页放进返回栈，
+    // 这样在搜索结果按返回键回到分类页（保留原来的分类/标签/滚动位置），而不是回首页。
+    var fromCat = $('category') && $('category').className.indexOf('on') >= 0;
+    if (fromCat) viewStack = ['home', 'category'];
+    go('results');
+    // ---- 并行：SMB 网盘文件名搜索 ----
+    // 单独请求、异步填充，不阻塞在线片源；token + 页面状态双重校验防止旧请求回灌
+    var st = ++smbSearchToken;
+    smbHits = [];
+    $('smbResBar').style.display = 'block';
+    text('smbHitsHd', 'SMB 网盘 · 正在搜索「' + wd + '」…');
+    $('smbHitsRow').innerHTML = '';
+    req('GET', '/api/smb/search?wd=' + encodeURIComponent(wd), null, function (d) {
+      if (st !== smbSearchToken || !isResultsOn()) return;
+      renderSmbHits(d);
+    });
+    req('POST', '/api/search', { wd: wd, filterAdult: cfg.filterAdult !== false }, function (d, httpStatus) {
+      searching = false;
+      if (!d) { toast('搜索失败，请检查网络'); text('resTitle', '搜索失败'); return; }
+      if (d.error) { text('resTitle', '搜索失败'); showEmpty(d.error); return; }
+      var list = phoneFilterList(d.list || []);
+      lastResults = list;
+      text('resTitle', '「' + wd + '」共 ' + list.length + ' 个结果');
+      renderResults(list);
+    });
+  }
+  function showEmpty(msg) {
+    var e = $('resEmpty');
+    e.style.display = 'block';
+    e.innerHTML = esc(msg);
+  }
+  function renderResults(list) {
+    var g = $('resGrid');
+    g.innerHTML = '';
+    if (!list.length) { showEmpty('没有找到相关影片\n试试换个关键词，或用手机扫码添加更多片源'); return; }
+    $('resEmpty').style.display = 'none';
+    for (var i = 0; i < list.length; i++) {
+      var it = list[i];
+      var b = document.createElement('button');
+      b.className = 'card focusable';
+      b.setAttribute('data-i', i);
+      var pic = it.pic || '';
+      var cnt = parseInt(it.sourceCount, 10) || 1;
+      b.innerHTML =
+        '<div class="poster">' + (pic
+          ? '<img src="' + esc(pic) + '" onerror="this.style.display=\'none\'">'
+          : '<span class="ph">无封面</span>') + '</div>' +
+        '<div class="meta"><div class="nm">' + esc(it.name) + '</div>' +
+        '<div class="sub">' + (cnt > 1 ? cnt + ' 个片源 · ' + esc(it.sourceName) : esc(it.sourceName)) + (it.remarks ? ' · ' + esc(it.remarks) : '') + '</div></div>' +
+        (cnt > 1 ? '<div class="tag">' + cnt + ' 源</div>' : (it.remarks ? '<div class="tag">' + esc(String(it.remarks).substring(0, 8)) + '</div>' : ''));
+      on(b, 'click', (function (idx) {
+        return function () { openDetail(lastResults[idx]); };
+      })(i));
+      g.appendChild(b);
+    }
+    setTimeout(function () {
+      var first = g.querySelector('.card');
+      if (first) first.focus();
+    }, 60);
+  }
+
+  // ---------------------------------------------------------------- 详情
+  function progressKey(item) {
+    if (!item) return 'lp_none';
+    if (item.mergeKey) return 'lp_m_' + item.mergeKey;
+    return 'lp_' + (item.sourceKey || '') + '_' + (item.vodId || '');
+  }
+  function openDetail(item, after) {
+    if (!item) return;
+    // SMB 网盘影片没有采集源详情：按记录里的目录重建选集，仍走点播详情页 → 点播播放器
+    if (item.smb) { openSmbDetail(item, after); return; }
+    text('dtName', item.name || '详情');
+    text('dtTitle', item.name || '');
+    text('dtInfo', (item.sourceName || '') + (item.typeName ? ' · ' + item.typeName : '') +
+      (item.year ? ' · ' + item.year : '') + (item.area ? ' · ' + item.area : ''));
+    text('dtDesc', '正在获取剧集…');
+    $('dtCover').src = item.pic || '';
+    $('eps').innerHTML = '';
+    go('detail');
+    fetchDetail(item, after, 0);
+  }
+  function fetchDetail(item, after, forcedIndex) {
+    req('GET', '/api/detail?k=' + encodeURIComponent(item.sourceKey) + '&id=' + encodeURIComponent(item.vodId),
+      null, function (d) {
+        if (!d || d.error) { text('dtDesc', (d && d.error) || '获取详情失败'); return; }
+        var info = d.videoInfo || {};
+        var eps = d.episodes || [];
+        text('dtTitle', info.title || item.name || '');
+        var line = (item.sourceName || '');
+        if (info.typeName) line += ' · ' + info.typeName;
+        if (info.year) line += ' · ' + info.year;
+        if (info.area) line += ' · ' + info.area;
+        if (info.remarks) line += ' · ' + info.remarks;
+        text('dtInfo', line);
+        text('dtDesc', (info.desc || '').replace(/<[^>]+>/g, ''));
+        if (info.cover) $('dtCover').src = info.cover;
+        var idx = forcedIndex || 0;
+        if (!idx) {
+          var last = readProgress(item);
+          if (last && last.index < eps.length) idx = last.index;
+        }
+        if (idx >= eps.length) idx = 0;
+        curDetail = { item: item, episodes: eps, index: idx };
+        renderEps();
+        renderSourcesBar();
+        setTimeout(function () {
+          var el = $('eps').querySelector('.ep');
+          if (el) el.focus();
+        }, 60);
+        if (after) after();
+      });
+  }
+  function renderSourcesBar() {
+    var box = $('srcList');
+    if (!box) return;
+    var item = curDetail ? curDetail.item : null;
+    if (item && item.smb) {
+      text('srcCount', 1);
+      text('srcCur', item.sourceName || 'SMB 网盘');
+      box.innerHTML = '<button class="srcbtn cur" type="button">SMB 网盘（本地文件）</button>';
+      return;
+    }
+    var srcs = (item && item.sources) || [];
+    // 手机版：停用的片源不出现在「选择片源」里（电视版走原数组）
+    if (window.__phoneOrigin && srcs.length) {
+      var sf = [];
+      for (var si = 0; si < srcs.length; si++) if (phoneSrcEnabled(srcs[si].sourceKey)) sf.push(srcs[si]);
+      srcs = sf;
+    }
+    if (!srcs.length && item) srcs = [{ sourceKey: item.sourceKey, sourceName: item.sourceName, vodId: item.vodId }];
+    text('srcCount', srcs.length);
+    text('srcCur', item ? (item.sourceName || '—') : '—');
+    box.innerHTML = '';
+    for (var i = 0; i < srcs.length; i++) {
+      var sr = srcs[i];
+      var b = document.createElement('button');
+      var cur = item && sr.sourceKey === item.sourceKey && sr.vodId === item.vodId;
+      b.className = 'srcbtn focusable' + (cur ? ' cur' : '');
+      b.textContent = (sr.sourceName || '片源') + (sr.remarks ? ' · ' + sr.remarks : '');
+      on(b, 'click', (function (sv) {
+        return function () { switchSource(sv); };
+      })(sr));
+      box.appendChild(b);
+    }
+  }
+  function switchSource(sr) {
+    if (!curDetail || !curDetail.item) return;
+    var item = curDetail.item;
+    if (sr.sourceKey === item.sourceKey && sr.vodId === item.vodId) { toast('已经是当前片源'); return; }
+    var keep = curDetail.index || 0;
+    // 同一部片（mergeKey 相同）进度跨源共享，切源不用重头看
+    item.sourceKey = sr.sourceKey;
+    item.vodId = sr.vodId;
+    item.sourceName = sr.sourceName;
+    if (sr.pic) item.pic = sr.pic;
+    text('dtDesc', '正在切换片源…');
+    $('eps').innerHTML = '<div class="empty" style="padding:30px 0">正在加载「' + esc(sr.sourceName || '') + '」的剧集…</div>';
+    renderSourcesBar();
+    toast('已切换到「' + (sr.sourceName || '') + '」');
+    fetchDetail(item, null, keep);
+  }
+
+  function renderEps() {
+    var box = $('eps');
+    box.innerHTML = '';
+    var eps = curDetail ? curDetail.episodes : [];
+    if (!eps.length) { box.innerHTML = '<div class="empty" style="padding:30px 0">这个源没有可用播放地址，返回换一个源试试</div>'; return; }
+    for (var i = 0; i < eps.length; i++) {
+      var b = document.createElement('button');
+      b.className = 'ep focusable' + (i === curDetail.index ? ' cur' : '');
+      b.setAttribute('data-i', i);
+      b.textContent = '第 ' + (i + 1) + ' 集';
+      on(b, 'click', (function (idx) {
+        return function () { play(idx); };
+      })(i));
+      box.appendChild(b);
+    }
+  }
+
+  // ---------------------------------------------------------------- 播放
+  // 统一由原生全屏播放器播放；手机后台可切「自动选择 / 内置 ExoPlayer / 系统解码」，
+  // 三档都在应用内完成，不再调起外部系统播放器。
+  function proxyAbs(u) {
+    return lanUrl + '/hls?url=' + encodeURIComponent(u);
+  }
+
+  // ---------------------------------------------------------------- IPTV 直播（三栏：分组 / 频道 / 播放）
+  var liveGroups = [];       // [{name, channels:[...]}]
+  var liveGroupIdx = 0;      // 当前分组索引
+  var liveAllChannels = [];  // 扁平全部频道，用于收藏分组
+  var liveHls = null;        // hls.js 实例
+  var liveFlv = null;        // flv.js 实例
+  var liveFlvTimer = null;   // FLV 断流重连定时器
+  var liveEdgeTimer = null;  // FLV 直播边缘追赶定时器（仅 seek，不黑屏）
+  var livePlaySeq = 0;       // 播放序号，防止异步探测/切换时的竞态
+  var liveCurCh = null;      // 当前播放频道
+  var FAV_KEY = 'iptv_favs';
+  // 沉浸模式：平时只显示视频，OK/点屏幕才呼出三栏 UI，无操作自动收起
+  var liveUiHidden = false;
+  var liveUiTimer = null;
+  var LIVE_UI_MS = 8000;     // 呼出后 8 秒无操作自动隐藏
+
+  function clearLiveUiTimer() { if (liveUiTimer) { clearTimeout(liveUiTimer); liveUiTimer = null; } }
+  function showLiveUi(autoHideMs) {
+    clearLiveUiTimer();
+    liveUiHidden = false;
+    var v = $('live'); if (v) v.classList.remove('ui-hidden');
+    var tip = $('liveTip'); if (tip) { tip.textContent = '按 OK / 点屏幕 显示频道列表'; tip.classList.remove('show'); }
+    // 呼出后把焦点给当前频道（或第一个），方便遥控器继续选台
+    setTimeout(function () {
+      var box = $('liveChans');
+      var target = (box && box.querySelector('.live-item.sel')) || (box && box.querySelector('.live-item')) ||
+                   ($('liveGroups') && $('liveGroups').querySelector('.live-item'));
+      if (target) { try { target.focus(); } catch (e) {} }
+    }, 60);
+    if (autoHideMs > 0) liveUiTimer = setTimeout(function () { hideLiveUi(true); }, autoHideMs);
+  }
+  // force=true 表示用户主动隐藏（点屏幕/返回键），即使还没选台也收起
+  function hideLiveUi(showTip, force) {
+    clearLiveUiTimer();
+    if (!liveCurCh && !force) return;   // 自动收起且未选台：保持列表可见
+    liveUiHidden = true;
+    var v = $('live'); if (v) v.classList.add('ui-hidden');
+    if (showTip) {
+      var tip = $('liveTip');
+      if (tip) { tip.classList.add('show'); setTimeout(function () { tip.classList.remove('show'); }, 2200); }
+    }
+  }
+  function touchLiveUi() {
+    if (liveUiHidden) return;
+    clearLiveUiTimer();
+    liveUiTimer = setTimeout(function () { hideLiveUi(true); }, LIVE_UI_MS);
+  }
+  // 沉浸态下：↑↓ 换台、←→ 换分组（都不呼出界面，保持全屏）
+  // 「换台反转」只对调沉浸态 ↑↓ 换台方向；列表显示时由焦点按钮自己导航，不反转
+  function liveStepChannel(delta) {
+    var g = liveGroups[liveGroupIdx];
+    if (!g || !g.channels || !g.channels.length) return;
+    var step = cfg.channelReverse ? -delta : delta;
+    var idx = -1;
+    for (var i = 0; i < g.channels.length; i++) {
+      if (liveCurCh && chKey(g.channels[i]) === chKey(liveCurCh)) { idx = i; break; }
+    }
+    idx = (idx < 0) ? 0 : (idx + step + g.channels.length) % g.channels.length;
+    playLive(g.channels[idx], true);
+  }
+  function liveStepGroup(delta) {
+    if (!liveGroups.length) return;
+    liveGroupIdx = (liveGroupIdx + delta + liveGroups.length) % liveGroups.length;
+    renderLiveGroups(); renderLiveChans();
+    var g = liveGroups[liveGroupIdx];
+    text('liveStatus', '分组：' + (g ? g.name : '') + ' · OK 显示列表');
+  }
+
+  // 收藏（存 localStorage，key = 频道 url+name）
+  function chKey(ch) { return (ch.url || '') + '|' + (ch.name || ''); }
+  function getFavs() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY) || '{}'); } catch (e) { return {}; }
+  }
+  function toggleFav(ch) {
+    var f = getFavs(), k = chKey(ch);
+    if (f[k]) delete f[k]; else f[k] = { name: ch.name, url: ch.url, logo: ch.logo || '', group: ch.group || '' };
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(f)); } catch (e) {}
+    return !!f[k];
+  }
+
+  function openLive() {
+    go('live');
+    // 手机后台可能刚改过「换台反转」，进直播页时轻量刷新一次，保证 ↑↓ 方向一致
+    req('GET', '/api/config', null, function (d) { if (d) cfg.channelReverse = !!d.channelReverse; });
+    showLiveUi(LIVE_UI_MS);   // 刚进入先亮出列表，8 秒后若没选台则收起（无频道在播时不会真隐藏）
+    setTimeout(function () { var b = $('liveGroups').querySelector('.live-item'); if (b) try { b.focus(); } catch (e) {} }, 80);
+    // 每次进直播页都静默重拉一次：分组显示/隐藏保存后返回即生效；
+    // /api/iptv 本身有 6 小时频道缓存，这里只是重新按隐藏名单过滤，不会重复下载。
+    loadLive(!liveGroups.length);
+  }
+  function loadLive(showLoading) {
+    if (showLoading) text('liveStatus', '正在加载频道…');
+    req('GET', '/api/iptv', null, function (d, st) {
+      if (!d || !d.ok || !d.groups || !d.groups.length) {
+        // 全部分组被隐藏时后端会带 hint，别误报成「订阅不可用」
+        text('liveStatus', (d && d.hint) ? d.hint
+          : '加载失败：请在手机后台「直播源」设置订阅地址，或检查网络');
+        if (d && d.ok) { liveGroups = []; renderLiveGroups(); renderLiveChans(); }
+        return;
+      }
+      liveGroups = d.groups;
+      // 扁平化全部频道 + 收藏分组
+      liveAllChannels = [];
+      for (var i = 0; i < liveGroups.length; i++) {
+        var chs = liveGroups[i].channels || [];
+        for (var j = 0; j < chs.length; j++) liveAllChannels.push(chs[j]);
+      }
+      var fav = getFavs(), favList = [];
+      for (var k in fav) if (fav.hasOwnProperty(k)) favList.push(fav[k]);
+      // 把「全部频道」和「我的收藏」插到最前（与截图一致）
+      var decorated = [
+        { name: '全部频道', channels: liveAllChannels },
+        { name: '我的收藏', channels: favList }
+      ];
+      for (var m = 0; m < liveGroups.length; m++) decorated.push(liveGroups[m]);
+      liveGroups = decorated;
+      if (liveGroupIdx >= liveGroups.length) liveGroupIdx = 0;
+      renderLiveGroups();
+      renderLiveChans();
+      text('liveStatus', '共 ' + (d.count || 0) + ' 个频道 · ' + liveGroups.length + ' 个分组 · ← → 切换栏目，OK 收藏');
+    });
+  }
+  function renderLiveGroups() {
+    var box = $('liveGroups');
+    if (!box) return;
+    box.innerHTML = '';
+    for (var i = 0; i < liveGroups.length; i++) {
+      (function (idx, g) {
+        var it = document.createElement('button');
+        it.type = 'button';
+        it.className = 'live-item focusable' + (idx === liveGroupIdx ? ' sel' : '');
+        it.innerHTML = '<span class="no">' + (idx + 1) + '</span>' +
+          '<span class="nm">' + esc(g.name) + '</span>' +
+          '<span class="cnt">' + ((g.channels || []).length) + '</span>';
+        on(it, 'click', function () {
+          liveGroupIdx = idx; renderLiveGroups(); renderLiveChans();
+        });
+        box.appendChild(it);
+      })(i, liveGroups[i]);
+    }
+  }
+  function renderLiveChans() {
+    var box = $('liveChans');
+    if (!box) return;
+    box.innerHTML = '';
+    var g = liveGroups[liveGroupIdx];
+    text('liveChanTitle', g ? g.name : '频道');
+    if (!g) return;
+    var chs = g.channels || [];
+    var fav = getFavs();
+    for (var i = 0; i < chs.length; i++) {
+      (function (ch) {
+        var it = document.createElement('button');
+        it.type = 'button';
+        it.className = 'live-item focusable' + (liveCurCh && chKey(liveCurCh) === chKey(ch) ? ' sel' : '');
+        var isFav = !!fav[chKey(ch)];
+        it.innerHTML = '<span class="no">' + (chs.indexOf(ch) + 1) + '</span>' +
+          '<span class="nm">' + esc(ch.name) + '</span>' +
+          '<span class="star' + (isFav ? ' on' : '') + '">' + (isFav ? '★' : '☆') + '</span>';
+        on(it, 'click', function () {
+          // 已是当前播放频道：再按一次 OK 切换收藏；否则切换频道播放
+          if (liveCurCh && chKey(liveCurCh) === chKey(ch)) {
+            var f = getFavs(), k = chKey(ch);
+            if (f[k]) delete f[k]; else f[k] = { name: ch.name, url: ch.url, logo: ch.logo || '', group: ch.group || '' };
+            try { localStorage.setItem(FAV_KEY, JSON.stringify(f)); } catch (e) {}
+            toast(f[k] ? '已收藏：' + ch.name : '已取消收藏：' + ch.name);
+            renderLiveChans();
+            if (liveGroupIdx === 1) loadLive(false);
+          } else {
+            playLive(ch);
+          }
+        });
+        box.appendChild(it);
+      })(chs[i]);
+    }
+  }
+  // 彻底销毁当前的所有播放器实例
+  function destroyLivePlayers() {
+    if (liveFlvTimer) { clearTimeout(liveFlvTimer); liveFlvTimer = null; }
+    if (liveEdgeTimer) { clearInterval(liveEdgeTimer); liveEdgeTimer = null; }
+    if (liveHls) { try { liveHls.destroy(); } catch (e) {} liveHls = null; }
+    if (liveFlv) { try { liveFlv.destroy(); } catch (e) {} liveFlv = null; }
+  }
+  // 用 hls.js 播放 m3u8
+  function playWithHls(url, video, seq) {
+    if (!window.Hls || !Hls.isSupported()) { playNative(url, video); return; }
+    destroyLivePlayers();
+    liveHls = new Hls({ enableWorker: true, lowLatencyMode: true });
+    var fellBack = false;
+    liveHls.loadSource(url);
+    liveHls.attachMedia(video);
+    liveHls.on(Hls.Events.MANIFEST_PARSED, function () { if (seq === livePlaySeq) video.play().catch(function () {}); });
+    liveHls.on(Hls.Events.ERROR, function (evt, data) {
+      if (seq !== livePlaySeq || !data || !data.fatal) return;
+      if (!fellBack && (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.type === Hls.ErrorTypes.MEDIA_ERROR)) {
+        fellBack = true;
+        playNative(url, video);   // m3u8 失败也回退原生试一次
+      } else {
+        text('liveStatus', '播放出错，换一个频道试试');
+      }
+    });
+  }
+  // 播放 HTTP-FLV（MSE 软解）。电视 WebView 上最忌"卡住就 destroy 重建"——
+  // destroy 会立刻黑屏、重建又要几秒加载；直播播放头追到 buffer 边缘时进度短暂停滞
+  // 属正常现象，一旦误判就陷入"黑屏→重播→黑屏"死循环。所以这里：
+  // ① 用缓冲区内 seek 追直播，不销毁播放器、不黑屏；
+  // ② 只有真正网络断流且间隔够长才重连一次。
+  function playWithFlv(rawUrl, uaPart, video, seq) {
+    if (!window.flvjs || !flvjs.isSupported()) {
+      text('liveStatus', '当前环境不支持 FLV 播放');
+      return;
+    }
+    var flvUrl = window.location.protocol + '//' + window.location.host + '/flv?url=' + encodeURIComponent(rawUrl) + uaPart;
+    var player = null;
+    var lastNetErr = 0;
+    var NET_ERR = (window.flvjs && flvjs.ErrorTypes) ? flvjs.ErrorTypes.NETWORK_ERROR : 'NetworkError';
+
+    // 温和追赶直播：只在 seekable 范围内 seek，不 destroy、不重载、不黑屏。
+    function startEdgeChaser() {
+      if (liveEdgeTimer) clearInterval(liveEdgeTimer);
+      liveEdgeTimer = setInterval(function () {
+        if (seq !== livePlaySeq) { clearInterval(liveEdgeTimer); liveEdgeTimer = null; return; }
+        if (!liveFlv) return;
+        try {
+          var sk = video.seekable;
+          if (sk && sk.length > 0) {
+            var edge = sk.end(sk.length - 1);
+            var ct = video.currentTime || 0;
+            // 落后直播边缘超过 8 秒才追，跳到边缘前 1 秒（缓冲区内，无黑屏）
+            if (isFinite(edge) && ct < edge - 8) video.currentTime = edge - 1;
+          }
+        } catch (e) {}
+      }, 5000);
+    }
+
+    function create() {
+      if (seq !== livePlaySeq) return;   // 已切台，停止
+      if (player) { try { player.destroy(); } catch (e) {} player = null; }
+      player = flvjs.createPlayer({
+        type: 'flv',
+        url: flvUrl + (flvUrl.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now(),
+        isLive: true,
+        cors: true
+      }, {
+        enableWorker: false,
+        enableStashBuffer: true,         // 抗网络/解码抖动
+        stashInitialSize: 384 * 1024,
+        autoCleanupSourceBuffer: true,
+        autoCleanupMaxBackwardDuration: 30,
+        autoCleanupMinBackwardDuration: 15
+      });
+      liveFlv = player;
+      player.attachMediaElement(video);
+      player.load();
+      player.on(flvjs.Events.MEDIA_INFO, function () {
+        if (seq !== livePlaySeq) return;
+        video.play().catch(function () {});
+        startEdgeChaser();
+      });
+      // 绝大多数 ERROR（媒体解码抖动等）直接忽略，绝不因此重建黑屏。
+      // 只有真正的网络断流才重连，且 20 秒内最多一次，杜绝循环黑屏。
+      player.on(flvjs.Events.ERROR, function (type) {
+        if (seq !== livePlaySeq) return;
+        if (type !== NET_ERR) return;
+        var now = Date.now();
+        if (now - lastNetErr < 20000) return;
+        lastNetErr = now;
+        if (liveFlvTimer) clearTimeout(liveFlvTimer);
+        liveFlvTimer = setTimeout(function () {
+          liveFlvTimer = null;
+          if (seq === livePlaySeq) { text('liveStatus', '网络中断，正在恢复…'); create(); }
+        }, 1500);
+      });
+    }
+    create();
+  }
+  // 原生播放（mp4/ts/或浏览器原生支持的流）
+  function playNative(url, video) {
+    destroyLivePlayers();
+    try {
+      video.src = url;
+      video.load();
+      video.play().catch(function () { text('liveStatus', '播放出错，换一个频道试试'); });
+    } catch (e) {
+      text('liveStatus', '播放出错，换一个频道试试');
+    }
+  }
+  function playLive(ch, keepHidden) {
+    if (!ch || !ch.url) { toast('该频道没有播放地址'); return; }
+    liveCurCh = ch;
+    var seq = ++livePlaySeq;   // 本次播放序号：切换频道后旧请求自动失效
+    // 沉浸态下换台：保持隐藏，只闪一下频道名提示
+    if (keepHidden) {
+      var tip = $('liveTip');
+      if (tip) { tip.textContent = ch.name || '直播'; tip.classList.add('show'); setTimeout(function () { tip.classList.remove('show'); }, 1600); }
+    }
+    text('liveNow', ch.name || '直播');
+    text('liveStatus', '正在播放：' + (ch.name || '') + ' · 按 OK 收藏/取消收藏');
+    var ph = $('livePlaceholder');
+    if (ph) ph.style.display = 'none';
+    var video = $('liveVideo');
+    // 网页内嵌播放必须同源：直接用当前页面 host，端口自动正确、无跨域
+    var uaPart = ch.ua ? '&ua=' + encodeURIComponent(ch.ua) : '';
+    var url = window.location.protocol + '//' + window.location.host + '/hls?url=' + encodeURIComponent(ch.url) + uaPart;
+    var probeUrl = window.location.protocol + '//' + window.location.host + '/probe?url=' + encodeURIComponent(ch.url) + uaPart;
+
+    // 先销毁旧播放器，再探测类型选择引擎；探测失败则默认按 m3u8 试
+    destroyLivePlayers();
+    var started = false;
+    var start = function (type) {
+      if (started || seq !== livePlaySeq) return;   // 防止竞态重复播放
+      started = true;
+      if (type === 'flv') playWithFlv(ch.url, uaPart, video, seq);
+      else if (type === 'mp4' || type === 'ts') playNative(url, video);
+      else playWithHls(url, video, seq);            // m3u8 / unknown 都先按 hls.js 试
+    };
+    try {
+      fetch(probeUrl).then(function (r) { return r.text(); }).then(function (t) {
+        start((t || '').trim().toLowerCase());
+      }).catch(function () { start('m3u8'); });
+      // 探测超时兜底：6 秒无响应直接按通用方式播放
+      setTimeout(function () { start('m3u8'); }, 6000);
+    } catch (e) {
+      start('m3u8');
+    }
+    renderLiveChans();  // 更新选中态
+    if (!keepHidden) showLiveUi(LIVE_UI_MS);  // 选中播放后停留一会儿自动收起，进入全屏沉浸
+  }
+  function stopLive() {
+    clearLiveUiTimer();
+    livePlaySeq++;             // 作废所有在途的异步播放
+    destroyLivePlayers();
+    var v = $('liveVideo');
+    if (v) {
+      try { v.pause(); } catch (e) {}
+      try { v.removeAttribute('src'); v.load(); } catch (e) {}
+    }
+  }
+
+  function startExo(index) {
+    var prog = readProgress(curDetail.item);
+    var resume = (prog && prog.index === index && prog.time > 5) ? Math.round(prog.time * 1000) : 0;
+    // 先落一条记录：即使播放中途退出/回传丢失，也能在观看记录里看到这部片
+    saveProgress(curDetail.item, index, prog && prog.index === index ? prog.time : 0);
+    // SMB 本地影片不套用在线片源的「跳过片头片尾」秒数
+    var isSmb = !!(curDetail.item && curDetail.item.smb);
+    var json = JSON.stringify({
+      episodes: curDetail.episodes,
+      index: index,
+      title: curDetail.item.name || '',
+      sourceName: curDetail.item.sourceName || '',
+      cover: curDetail.item.pic || curDetail.item.p || '',
+      skipIntro: isSmb ? 0 : (parseInt(cfg.skipIntro, 10) || 0),
+      skipOutro: isSmb ? 0 : (parseInt(cfg.skipOutro, 10) || 0),
+      resumeMs: resume
+    });
+    try { window.exo.play(json); }
+    catch (e) { toast('调起点播播放器失败'); }
+  }
+  // ExoPlayer 退出回调（由 MainActivity.onActivityResult 注入调用）
+  window.__onExoExit = function (index, positionMs, failed, ended) {
+    if (!curDetail) return;
+    curDetail.index = index;
+    saveProgress(curDetail.item, index, (positionMs || 0) / 1000);
+    renderEps();
+    if (failed) {
+      toast(curDetail.item && curDetail.item.smb
+        ? '播放失败，请检查网盘是否在线或换个文件' : '这个源播放失败，请返回换一个片源');
+    } else {
+      toast('播放进度已保存');
+    }
+  };
+
+  function play(index) {
+    if (!curDetail || !curDetail.episodes.length) return;
+    if (index < 0) index = 0;
+    if (index >= curDetail.episodes.length) { toast('已经是最后一集'); return; }
+    curDetail.index = index;
+    // 播放引擎三档（自动选择 / 内置 ExoPlayer / 系统解码）都由原生播放器
+    // 读取电视端配置处理，网页层统一调起，不再跳出到外部系统播放器。
+    startExo(index);
+  }
+
+  // 把一条记录转成可存储对象（含 key，供服务端按 key 去重）
+  function makeRecord(key, item, index, time, ts) {
+    var rec = { key: key, index: index, time: Math.max(0, time || 0), ts: ts || new Date().getTime(),
+      name: item.name, pic: item.pic, sourceName: item.sourceName, sourceKey: item.sourceKey,
+      vodId: item.vodId, mergeKey: item.mergeKey || '', sources: item.sources || [] };
+    // SMB 影片：把网盘 id / 文件路径 / 所在目录一起存进观看记录，
+    // 这样「观看记录」里点开能重建同目录选集并续播，而不是去采集源拉详情
+    if (item && item.smb) {
+      rec.smb = true;
+      rec.smbId = item.smbId;
+      rec.smbPath = item.smbPath;
+      rec.smbParent = item.smbParent;
+      rec.smbShareName = item.smbShareName;
+    }
+    return rec;
+  }
+  function saveProgress(item, index, time) {
+    if (!item) return;
+    try {
+      var key = progressKey(item);
+      var rec = makeRecord(key, item, index, time, new Date().getTime());
+      localStorage.setItem(key, JSON.stringify(rec));
+      // 同步到服务端，手机后台可见
+      req('POST', '/api/history', { action: 'save', record: rec }, function () {});
+      checkCacheBudget();
+    } catch (e) {}
+  }
+  function readProgress(item) {
+    if (!item) return null;
+    try {
+      var s = localStorage.getItem(progressKey(item));
+      return s ? JSON.parse(s) : null;
+    } catch (e) { return null; }
+  }
+  // 双向合并观看记录（本地 + 服务端按 key 取最新），避免服务端为空时误清本地历史
+  function syncHistory(cb) {
+    req('GET', '/api/history', null, function (d) {
+      var serverOk = d && d.records;
+      var recs = serverOk ? d.records : [];
+      try {
+        // 1) 读取本地记录到 map（按 key）
+        var map = {};
+        var kill = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf('lp_') === 0) {
+            kill.push(k);
+            try { var lr = JSON.parse(localStorage.getItem(k)); if (lr && lr.key) map[lr.key] = lr; } catch (e) {}
+          }
+        }
+        // 2) 合并服务端记录：同 key 取 ts 较新者
+        for (var m = 0; m < recs.length; m++) {
+          var r = recs[m];
+          if (!r || !r.key) continue;
+          var old = map[r.key];
+          if (!old || (r.ts || 0) >= (old.ts || 0)) map[r.key] = r;
+        }
+        // 3) 清旧 + 写回合并结果
+        for (var j = 0; j < kill.length; j++) localStorage.removeItem(kill[j]);
+        var localKeys = {};
+        for (var key in map) {
+          if (!map.hasOwnProperty(key)) continue;
+          localStorage.setItem(key, JSON.stringify(map[key]));
+          localKeys[key] = true;
+        }
+        // 4) 服务端请求成功时，把本地独有的记录补传到服务端（手机端也能看到）
+        if (serverOk) {
+          var serverKeys = {};
+          for (var s = 0; s < recs.length; s++) if (recs[s] && recs[s].key) serverKeys[recs[s].key] = true;
+          for (var k2 in map) {
+            if (!map.hasOwnProperty(k2)) continue;
+            if (!serverKeys[k2]) req('POST', '/api/history', { action: 'save', record: map[k2] }, function () {});
+          }
+        }
+      } catch (e) {}
+      if (cb) cb();
+    });
+  }
+
+  on($('btnBack1'), 'click', function () { back(); });
+  on($('btnBack2'), 'click', function () { back(); });
+
+
+
+
+  // ==== CAT BIND:START ====
+  var CAT_TAGS = ['热门','最新','经典','豆瓣高分','华语','欧美','动画'];
+  var catKind = 'movie', catTag = '热门';
+  var catData = window.__DOUBAN || { movie:{}, tv:{} };
+  function catItems() { return (catData[catKind] && catData[catKind][catTag]) || []; }
+  function renderCatTabs() {
+    var tabs = document.querySelectorAll('#catTabs .cat-tab');
+    for (var i = 0; i < tabs.length; i++) tabs[i].className = 'cat-tab focusable' + (tabs[i].getAttribute('data-kind') === catKind ? ' on' : '');
+  }
+  function renderCatFilters() {
+    var box = $('catFilters'); box.innerHTML = '';
+    for (var i = 0; i < CAT_TAGS.length; i++) {
+      var b = document.createElement('button');
+      b.className = 'cat-chip focusable' + (CAT_TAGS[i] === catTag ? ' on' : '');
+      b.type = 'button'; b.textContent = CAT_TAGS[i];
+      on(b, 'click', (function (tag) { return function () {
+        catTag = tag; renderCatFilters(); renderCatGrid(); refreshLive();
+        var cur = $('catFilters').querySelector('.cat-chip.on'); if (cur) cur.focus();
+      }; })(CAT_TAGS[i]));
+      box.appendChild(b);
+    }
+  }
+  function renderCatGrid(keepFocus) {
+    var g = $('catGrid');
+    var v = $('category');
+    var savedTop = v ? v.scrollTop : 0;   // 关键：重建前记住滚动位置，避免回到顶部
+    var oldFocusIdx = -1;
+    if (keepFocus) {
+      var oldCards = g.querySelectorAll('.cat-card');
+      for (var k = 0; k < oldCards.length; k++) { if (oldCards[k] === document.activeElement) { oldFocusIdx = k; break; } }
+    }
+    g.innerHTML = '';
+    var items = catItems();
+    updateCatFoot();
+    for (var i = 0; i < items.length; i++) {
+      (function (it, idx) {
+        var b = document.createElement('button');
+        b.className = 'cat-card focusable'; b.type = 'button';
+        var imgSrc = it.p ? (lanUrl + '/hls?url=' + encodeURIComponent(it.p)) : '';
+        // 手机版：预置片名占位层，图片加载失败时隐藏破图标、露出片名；
+        // 电视版分支输出与原来完全一致，DOM 与视觉零改动。
+        var phoneMode = document.documentElement.classList.contains('phone');
+        var poster = imgSrc
+            ? (phoneMode
+                ? '<div class="ph">' + esc(it.n) + '</div><img src="' + esc(imgSrc) +
+                  '" alt="" onerror="this.style.display=\'none\'">'
+                : '<img src="' + esc(imgSrc) + '" alt="">')
+            : '<div class="ph">' + esc(it.n) + '</div>';
+        b.innerHTML = '<div class="cp">' + poster +
+          '<span class="score">★ ' + esc(it.r || '—') + '</span></div>' +
+          '<div class="cn">' + esc(it.n) + '</div>';
+        on(b, 'click', function () {
+          // 用豆瓣片名去现有片源里搜索；返回栈由 doSearch 统一处理（回分类页）
+          doSearch(it.n);
+        });
+        b.setAttribute('data-cat-idx', i);
+        b.setAttribute('data-cat-last', i === items.length - 1 ? '1' : '0');
+        g.appendChild(b);
+      })(items[i], i);
+    }
+    catRestoring = true;
+    if (keepFocus) {
+      // 加载更多：优先恢复原焦点卡片；找不到就保持当前焦点，绝不跳回第一张
+      if (oldFocusIdx >= 0) {
+        var newCards = g.querySelectorAll('.cat-card');
+        var tgt = newCards[Math.min(oldFocusIdx, newCards.length - 1)];
+        if (tgt) { try { tgt.focus(); } catch (e) {} }
+      }
+    } else {
+      // 焦点还在上方控制区（搜索框 / 电影剧集 / 筛选目录）时，异步刷新片单
+      // 不要把焦点抢到第一张海报，否则「按 ↓ 一层层跳」会被打断。
+      var ar = catRowOf(document.activeElement);
+      if (ar < 0 || ar >= 3) {
+        var f = g.querySelector('.cat-card'); if (f) { try { f.focus(); } catch (e) {} }
+      }
+    }
+    catRestoring = false;
+    if (v) v.scrollTop = savedTop;   // 还原滚动位置
+  }
+  function updateCatFoot(extra) {
+    var n = catItems().length;
+    var tail = catHasMore ? (window.__phoneOrigin ? ' · 上拉加载更多' : ' · 下移到底部自动加载更多')
+                           : (n ? ' · 已全部加载' : '');
+    text('catFoot', extra || ('共 ' + n + ' 部' + tail));
+  }
+  // 每次打开分类页都通过本机服务端代理实时拉取豆瓣片单（不缓存）；失败则用内置轻量索引
+  var catLoading = 0;
+  var catRestoring = false;      // 重建分类网格期间抑制 focusin 的自动滚动/再次加载
+  var CAT_PAGE = 24;              // 每页部数
+  var catPageStart = 0;          // 下一页起始位置
+  var catHasMore = true;         // 是否还有更多
+  var catLoadingMore = false;    // 防止并发重复加载
+  var catBatch = 0;              // 请求批次，防止切页后旧请求覆盖
+  function liveUrl(kind, tag, start) {
+    return 'https://movie.douban.com/j/search_subjects?type=' + kind +
+      '&tag=' + encodeURIComponent(tag) + '&sort=recommend&page_limit=' + CAT_PAGE + '&page_start=' + (start || 0);
+  }
+  function rowsFromSubjects(list) {
+    var rows = [];
+    if (!list) return rows;
+    for (var i = 0; i < list.length; i++) {
+      var x = list[i];
+      if (x && x.title && x.cover) rows.push({ n: x.title, r: x.rate || '', p: x.cover });
+    }
+    return rows;
+  }
+  /* 手机版兜底：实时豆瓣接口不可用（被墙 / 超时）时，从内置轻量索引的其它
+     分类里取未展示过的条目，保证「上拉加载更多」不会一失败就永久锁死。
+     电视版不调用（window.__phoneOrigin 未定义），行为零变化。 */
+  function catFallbackRows() {
+    var cur = catData[catKind][catTag] || [], seen = {}, out = [];
+    for (var i = 0; i < cur.length; i++) seen[cur[i].n] = 1;
+    var bank = (window.__DOUBAN || {})[catKind] || {}, tags = [];
+    for (var t in bank) if (bank.hasOwnProperty(t)) tags.push(t);
+    for (var ti = 0; ti < tags.length && out.length < CAT_PAGE; ti++) {
+      var arr = bank[tags[ti]] || [];
+      for (var j = 0; j < arr.length && out.length < CAT_PAGE; j++) {
+        if (arr[j] && !seen[arr[j].n]) { seen[arr[j].n] = 1; out.push(arr[j]); }
+      }
+    }
+    return out;
+  }
+  function refreshLive() {
+    var stamp = ++catLoading;
+    catBatch++;
+    catPageStart = 0; catHasMore = true; catLoadingMore = false;
+    var proxy = lanUrl + '/hls?url=' + encodeURIComponent(liveUrl(catKind, catTag, 0));
+    req('GET', proxy, null, function (d, st) {
+      if (stamp !== catLoading) return;
+      var rows = rowsFromSubjects(d && d.subjects);
+      if (rows.length) {
+        catData[catKind][catTag] = rows;
+        catPageStart = rows.length;
+        if (rows.length < CAT_PAGE) catHasMore = false;
+        renderCatGrid();
+        return;
+      }
+      // 电视版：失败即锁定（原行为）；手机版：留着 catHasMore，让上拉能补内置索引
+      catHasMore = !!(window.__phoneOrigin && catFallbackRows().length);
+      renderCatGrid(); // 代理失败：用内置索引（海报仍走代理实时加载）
+    });
+  }
+  // 继续加载下一页，追加到当前列表（实时，不缓存）
+  function loadMoreCat() {
+    if (catLoadingMore || !catHasMore || !catData[catKind]) return;
+    catLoadingMore = true;
+    updateCatFoot('正在加载更多…');
+    var stamp = catLoading, batch = catBatch;
+    var proxy = lanUrl + '/hls?url=' + encodeURIComponent(liveUrl(catKind, catTag, catPageStart));
+    req('GET', proxy, null, function (d, st) {
+      catLoadingMore = false;
+      if (stamp !== catLoading || batch !== catBatch) return;
+      var rows = rowsFromSubjects(d && d.subjects);
+      if (!rows.length) {
+        if (window.__phoneOrigin) {
+          var extra = catFallbackRows();
+          if (extra.length) {
+            var cc = catData[catKind][catTag] || [];
+            catData[catKind][catTag] = cc.concat(extra);
+            catPageStart += CAT_PAGE;
+            renderCatGrid(true);
+            return;
+          }
+        }
+        catHasMore = false; updateCatFoot(); return;
+      }
+      var cur = catData[catKind][catTag] || [];
+      var seen = {};
+      for (var k = 0; k < cur.length; k++) seen[cur[k].n] = 1;
+      var added = 0;
+      for (var j = 0; j < rows.length; j++) {
+        if (!seen[rows[j].n]) { cur.push(rows[j]); seen[rows[j].n] = 1; added++; }
+      }
+      catData[catKind][catTag] = cur;
+      catPageStart += rows.length;
+      if (rows.length < CAT_PAGE || added === 0) catHasMore = false;
+      renderCatGrid(true); // 保持焦点在当前卡片
+    });
+  }
+  function openCategory() {
+    sugHide();   // 从别的页面回来时不残留另一搜索框的联想
+    go('category'); renderCatTabs(); renderCatFilters(); renderCatGrid(); refreshLive();
+    // 默认焦点落在「热门」筛选按钮：不聚焦输入框，避免一打开就弹软键盘。
+    // 从热门按 ↓ 到海报、按 ↑ 逐层回「电影/剧集」→ 搜索框（主动要搜才弹键盘）。
+    catFocusDefault();
+    // 分类页滚动到底部自动加载下一页（手机/鼠标滚轮场景）
+    if (!openCategory._scrollBound) {
+      openCategory._scrollBound = true;
+      on($('category'), 'scroll', function () {
+        var v = $('category');
+        if (v.scrollTop + v.clientHeight >= v.scrollHeight - 140) loadMoreCat();
+      });
+      // 手机版兜底：点底部提示也能加载，避免个别 ROM 触摸滚动不派发 scroll
+      if (window.__phoneOrigin) {
+        on($('catFoot'), 'click', function () { if (catHasMore) loadMoreCat(); });
+      }
+    }
+  }
+  var catTabs = document.querySelectorAll('#catTabs .cat-tab');
+  for (var ci = 0; ci < catTabs.length; ci++) {
+    (function (tab) { on(tab, 'click', function () {
+      catKind = tab.getAttribute('data-kind'); catTag = '热门';
+      renderCatTabs(); renderCatFilters(); renderCatGrid(); refreshLive();
+      // 焦点落在「热门」那一排，保持一层一层的导航节奏（不再直接跳到海报 / 弹键盘）
+      catFocusDefault();
+    }); })(catTabs[ci]);
+  }
+  on($('btnCategory'), 'click', openCategory);
+  /** 冷启动「启动页 = 影视分类」时由 MainActivity 在页面加载完成后调用。
+      openCategory 内部 go('category') 会把分类页压入返回栈，按返回即回首页。 */
+  window.__openCategory = function () { openCategory(); };
+  // ==== CAT BIND:END ====
+
+  // ---------------------------------------------------------------- 二维码
+  function openQr() {
+    loadConfig(function () {
+      $('qrimg').src = '/api/qr?text=' + encodeURIComponent(lanUrl);
+      text('qrurl', lanUrl);
+      show('qrModal', true);
+      setTimeout(function () { $('btnCloseQr').focus(); }, 50);
+    });
+  }
+  function closeQr() { show('qrModal', false); }
+
+  // ---------------------------------------------------------------- 清除本地缓存
+  function openClear() {
+    show('clearModal', true);
+    readCacheUsage(function (bytes) { lastCacheBytes = bytes; updateCacheLabel(); });
+    setTimeout(function () { $('btnClearYes').focus(); }, 50);
+  }
+  function closeClear() { show('clearModal', false); }
+
+  function doClearCache(fromPush) {
+    // 1) 清除播放进度 / 继续观看记录（lp_ 开头的 localStorage）
+    var n = 0;
+    try {
+      var kill = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('lp_') === 0) kill.push(k);
+      }
+      for (var j = 0; j < kill.length; j++) { localStorage.removeItem(kill[j]); n++; }
+    } catch (e) {}
+    // 2) 清除系统网络缓存
+    req('GET', '/api/clearcache', null, function (d) {
+      var freed = d && d.freed ? Math.round(d.freed / 1024) : 0;
+      posterSeen = {}; lastCacheBytes = 0;   // 清除后估算归零
+      toast('已清除 ' + n + ' 条播放记录' + (freed > 0 ? '，释放网络缓存 ' + freed + ' KB' : ''));
+      closeClear();
+      setTimeout(function () { location.reload(); }, 900);
+    });
+    if (fromPush) toast('收到手机端指令，正在清除缓存…');
+  }
+
+  // ---------------------------------------------------------------- 观看记录
+  function fmtDate(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function openHistory() {
+    syncHistory(function () {
+      renderHistory();
+      go('history');
+      setTimeout(function () {
+        var b = $('hisGrid').querySelector('.card') || $('btnBackHis');
+        if (b) b.focus();
+      }, 60);
+    });
+  }
+  function renderHistory() {
+    var items = getPlayRecords();
+    var grid = $('hisGrid');
+    var empty = $('hisEmpty');
+    if (!items.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    grid.innerHTML = '';
+    for (var i = 0; i < items.length; i++) {
+      (function (it) {
+        var card = document.createElement('button');
+        card.className = 'card focusable';
+        var sub = '第 ' + ((it.index || 0) + 1) + ' 集 · ' + fmt(it.time || 0) + (it.sourceName ? ' · ' + it.sourceName : '');
+        var html = '<div class="poster">' + (it.pic ? '<img src="' + esc(it.pic) + '">' : '<span class="ph">' + esc(it.name) + '</span>') + '</div>' +
+          '<div class="meta"><div class="nm">' + esc(it.name) + '</div><div class="sub">' + esc(sub) +
+          '</div><div class="hisdate">' + esc(fmtDate(it.ts)) + '</div></div>';
+        card.innerHTML = html;
+        on(card, 'click', function () {
+          viewStack = ['home'];
+          openDetail({ sourceKey: it.sourceKey, vodId: it.vodId, name: it.name, pic: it.pic,
+            sourceName: it.sourceName, mergeKey: it.mergeKey, sources: it.sources,
+            smb: it.smb, smbId: it.smbId, smbPath: it.smbPath,
+            smbParent: it.smbParent, smbShareName: it.smbShareName }, function () {
+            // 观看记录：详情与剧集加载完成后，直接按上次的集数和进度续播，不再停在详情页
+            if (curDetail && curDetail.episodes.length) play(curDetail.index);
+          });
+        });
+        var del = document.createElement('button');
+        del.className = 'del';
+        del.innerHTML = '×';
+        del.setAttribute('title', '删除这条记录');
+        on(del, 'click', function (e) {
+          if (e && e.stopPropagation) e.stopPropagation();
+          try { localStorage.removeItem(it._key); } catch (err) {}
+          // 同步删除服务端记录，手机后台同步消失
+          req('POST', '/api/history', { action: 'del', key: it._key }, function () {});
+          toast('已删除记录：' + it.name);
+          renderHistory();
+        });
+        card.appendChild(del);
+        grid.appendChild(card);
+      })(items[i]);
+    }
+  }
+
+  // ---------------------------------------------------------------- 手机推送轮询
+  function pollPush() {
+    req('GET', '/api/poll', null, function (d) {
+      if (d && d.action) handlePush(d);
+    });
+  }
+  // 原生层收到 /api/push 时直接 evaluateJavascript 调进来，不等被冻结的 setInterval。
+  // 同一条指令可能既被即时送达、又被恢复后的轮询取到，按 pushId 去重，避免弹两次。
+  window.__nativePush = function (d) { if (d && d.action) handlePush(d); };
+  window.pollPush = pollPush;
+  var lastPushId = '';
+  function handlePush(d) {
+    if (!d) return;
+    if (d.pushId) {
+      if (d.pushId === lastPushId) return;
+      lastPushId = d.pushId;
+    }
+    if (d.action === 'search' && d.wd) {
+      viewStack = ['home'];
+      $('q').value = d.wd;
+      go('results');
+      doSearch(d.wd);
+    } else if (d.action === 'play' && d.item) {
+      viewStack = ['home'];
+      var idx = typeof d.index === 'number' ? d.index : 0;
+      openDetail(d.item, function () {
+        if (curDetail && curDetail.episodes && curDetail.episodes.length > idx) play(idx);
+        else toast('这个源没有可播的剧集');
+      });
+    } else if (d.action === 'live' && d.name) {
+      // 手机后台「直播推送」：直接用推送的频道名 + 线路起播原生直播播放器
+      viewStack = ['home'];
+      toast('已收到直播推送：' + d.name);
+      try { window.liveBridge.push(d.name, JSON.stringify(d.urls || [])); }
+      catch (e) { toast('调起直播失败'); }
+    } else if (d.action === 'apk' && d.path) {
+      // 手机后台推送升级包：电视端弹出系统安装界面，安装完自动销毁安装包
+      toast('收到升级包，正在打开安装界面…');
+      try { window.tvHost.installApk(d.path, d.name || 'iLaTV 升级包', d.token || 0); }
+      catch (e) { toast('打开安装界面失败'); }
+    } else if (d.action === 'config') {
+      loadConfig();
+    } else if (d.action === 'appearance') {
+      // 后台/手机设置改「主题色 + 明暗」后由服务端即时推送，不用刷新首页
+      if (d.theme) applyTheme(d.theme);
+      if (d.mode) applyMode(d.mode);
+      if (d.liveUiScale != null) applyLiveUi(d.liveUiScale, d.epgFontScale);
+    } else if (d.action === 'liveui') {
+      // 兼容旧版只带缩放的推送
+      applyLiveUi(d.liveUiScale, d.epgFontScale);
+    } else if (d.action === 'theme' && d.theme) {
+      // 兼容旧版后台只带 theme 的推送
+      applyTheme(d.theme);
+    } else if (d.action === 'clearcache') {
+      doClearCache(true);
+    }
+  }
+
+
+  /* ==== SUG START ==== 豆瓣实时搜索联想（走本机代理，实时不缓存）
+     首页「q / sugBox」和影视分类页「catQ / catSugBox」共用这套逻辑，
+     由 sugOwner 记住本次联想属于哪个输入框，避免异步回调渲染到另一个框里。 */
+  var sugTimer = null, sugSeq = 0, sugItems = [], sugIdx = -1, sugOpen = false, sugOwner = null;
+  /** 当前生效的搜索框：优先焦点所在输入框，其次按当前可见页面推断 */
+  function sugInput() {
+    var a = document.activeElement;
+    if (a && (a.id === 'q' || a.id === 'catQ')) return a;
+    return $('category') && $('category').className.indexOf('on') >= 0 ? $('catQ') : $('q');
+  }
+  function sugBoxOf(inp) { return inp && inp.id === 'catQ' ? $('catSugBox') : $('sugBox'); }
+  function sugHide() {
+    sugOpen = false; sugIdx = -1;
+    var a = $('sugBox'), b = $('catSugBox');
+    if (a) { a.className = 'sug-box'; a.innerHTML = ''; }
+    if (b) { b.className = 'sug-box'; b.innerHTML = ''; }
+  }
+  function sugUrl(wd) {
+    return 'https://movie.douban.com/j/subject_suggest?q=' + encodeURIComponent(wd);
+  }
+  function fetchSuggest(wd) {
+    var inp = sugInput(), box = sugBoxOf(inp);
+    if (!box) return;
+    sugOwner = inp;
+    wd = (wd || '').replace(/^\s+|\s+$/g, '');
+    if (!wd) { sugHide(); return; }
+    var stamp = ++sugSeq;
+    // 走应用自带服务端代理：带 Referer、绕过跨域；每次都请求，不做本地缓存
+    var proxy = proxyAbs(sugUrl(wd));
+    req('GET', proxy, null, function (d, st) {
+      if (stamp !== sugSeq || sugOwner !== inp) return;   // 已被更新的输入 / 切换输入框，丢弃旧结果
+      var arr = Array.isArray(d) ? d : (d && d.subjects) || [];
+      if (!arr.length) { sugHide(); return; } // 网络失败 / 无结果：静默降级，不影响原搜索
+      var rows = [];
+      for (var i = 0; i < arr.length && rows.length < 8; i++) {
+        var x = arr[i];
+        if (x && x.title) rows.push({ title: x.title, year: x.year || '', type: x.type || '' });
+      }
+      if (!rows.length) { sugHide(); return; }
+      sugItems = rows; sugIdx = -1; renderSuggest(box);
+    });
+  }
+  function renderSuggest(box) {
+    var b = box || sugBoxOf(sugInput()); if (!b) return;
+    var h = '';
+    for (var i = 0; i < sugItems.length; i++) {
+      var it = sugItems[i];
+      var kind = it.type === 'tv' ? '剧集' : (it.type === 'movie' ? '电影' : '');
+      h += '<div class="sug-item" data-i="' + i + '">' +
+             '<span class="sg-t">' + esc(it.title) + '</span>' +
+             (kind ? '<span class="sg-k">' + kind + '</span>' : '') +
+             (it.year ? '<span class="sg-y">' + esc(it.year) + '</span>' : '') +
+           '</div>';
+    }
+    b.innerHTML = h;
+    b.className = 'sug-box on';
+    sugOpen = true;
+    var nodes = b.querySelectorAll('.sug-item');
+    for (var j = 0; j < nodes.length; j++) {
+      (function (idx) {
+        on(nodes[j], 'click', function () { sugPick(idx); });
+      })(j);
+    }
+  }
+  function sugPick(i) {
+    var it = sugItems[i]; if (!it) return;
+    var inp = sugOwner || sugInput();
+    inp.value = it.title;
+    sugHide();
+    try { inp.blur(); } catch (e) {}
+    doSearch(it.title);
+  }
+  function sugMove(step) {
+    var box = sugBoxOf(sugOwner || sugInput());
+    if (!box) return;
+    var nodes = box.querySelectorAll('.sug-item');
+    if (!nodes.length) return;
+    if (sugIdx >= 0 && nodes[sugIdx]) nodes[sugIdx].className = 'sug-item';
+    sugIdx += step;
+    if (sugIdx < 0) sugIdx = 0;
+    if (sugIdx >= nodes.length) sugIdx = nodes.length - 1;
+    nodes[sugIdx].className = 'sug-item focused';
+    try { nodes[sugIdx].scrollIntoView({ block: 'nearest' }); } catch (e) {}
+  }
+  // 输入防抖：每次输入都实时拉豆瓣（不缓存），200ms 防抖减少请求。
+  // 首页搜索框与分类页搜索框共用，切换焦点时清掉另一个框残留的联想。
+  function bindSugInput(inp) {
+    if (!inp) return;
+    on(inp, 'input', function () {
+      if (sugTimer) clearTimeout(sugTimer);
+      var wd = inp.value;
+      sugTimer = setTimeout(function () { fetchSuggest(wd); }, 200);
+    });
+    on(inp, 'focus', function () { sugHide(); });
+  }
+  bindSugInput($('q'));
+  bindSugInput($('catQ'));
+  /* ==== SUG END ==== */
+
+  // ---------------------------------------------------------------- 键盘
+  document.addEventListener('keydown', function (e) {
+    var code = e.keyCode;
+    var tag = (document.activeElement && document.activeElement.tagName || '').toUpperCase();
+    var inInput = tag === 'INPUT' || tag === 'TEXTAREA';
+
+    if ($('qrModal').className.indexOf('on') >= 0) {
+      if (code === 8 || code === 27 || code === 13 || code === 19 || code === 4) {
+        e.preventDefault(); closeQr();
+      }
+      return;
+    }
+
+    if ($('clearModal').className.indexOf('on') >= 0) {
+      // 返回/取消键关闭弹窗；OK 交给焦点按钮的默认 click
+      if (code === 8 || code === 27 || code === 4) {
+        e.preventDefault(); closeClear();
+      }
+      return;
+    }
+    // SMB 表单弹层：返回键只关弹层；方向键继续走下面的全局焦点导航
+    if ($('smbModal').className.indexOf('on') >= 0 &&
+        (code === 8 || code === 27 || code === 4)) {
+      e.preventDefault(); closeSmbForm(); return;
+    }
+
+    // ---- IPTV 直播页：沉浸 / 呼出交互 ----
+    var liveOn = $('live') && $('live').className.indexOf('on') >= 0;
+    if (liveOn) {
+      var enter = code === 13 || code === 66;
+      var backKey = code === 8 || code === 27 || code === 4;
+      if (liveUiHidden) {
+        // 沉浸态：OK 呼出界面；↑↓ 换台；←→ 换分组；返回键退出直播页（交下面统一处理）
+        if (enter) { e.preventDefault(); showLiveUi(LIVE_UI_MS); return; }
+        if (code === 38) { e.preventDefault(); liveStepChannel(-1); return; }
+        if (code === 40) { e.preventDefault(); liveStepChannel(1); return; }
+        if (code === 37) { e.preventDefault(); liveStepGroup(-1); return; }
+        if (code === 39) { e.preventDefault(); liveStepGroup(1); return; }
+      } else {
+        // 界面显示态：返回键先收起进入沉浸；导航/确认续期，OK 由焦点按钮自身处理
+        if (backKey) { e.preventDefault(); hideLiveUi(true, true); return; }
+        if (enter || code === 37 || code === 38 || code === 39 || code === 40) touchLiveUi();
+      }
+    }
+
+    if (code === 8 || code === 27 || code === 4) { e.preventDefault(); if (viewStack.length > 1) back(); return; }
+
+    if (inInput) {
+      var curInput = document.activeElement;
+      // SMB 配置表单：不能走搜索框那套「回车直搜 / 联想」逻辑
+      if (curInput && String(curInput.className).indexOf('smb-input') >= 0) {
+        if (code === 13 || code === 66) { e.preventDefault(); smbFormNext(curInput); return; }
+        if (code === 38) { e.preventDefault(); moveFocus('up', $('smbModal')); return; }
+        if (code === 40) { e.preventDefault(); moveFocus('down', $('smbModal')); return; }
+        return;
+      }
+      // 首页搜索框 q 与分类页搜索框 catQ 共用这套按键逻辑，取当前真正聚焦的那个
+      var catInput = catOn() && curInput.id === 'catQ';
+      // 联想下拉展开时：↑↓ 在建议项间移动，OK 选中，返回键关闭；左右仍留给光标编辑
+      if (sugOpen && sugItems.length) {
+        if (code === 40) { e.preventDefault(); sugMove(1); return; }      // ↓ 下一条
+        if (code === 38) { e.preventDefault(); sugMove(-1); return; }     // ↑ 上一条
+        if (code === 13 || code === 66) {                                  // OK 选中
+          e.preventDefault();
+          if (sugIdx >= 0) sugPick(sugIdx); else doSearch(curInput.value);
+          return;
+        }
+        if (code === 8 || code === 27 || code === 4) { e.preventDefault(); sugHide(); return; }
+      }
+      if (code === 13 || code === 66) { e.preventDefault(); sugHide(); doSearch(curInput.value); return; }
+      // 上下键移出输入框，避免遥控器焦点卡死（左右键保留给光标编辑）
+      // 分类页搜索框走逐层导航：↓ 直接到「热门」那一排，再 ↓ 到海报
+      if (code === 38) { e.preventDefault(); if (catInput) catMoveFocus('up'); else moveFocus('up'); return; }
+      if (code === 40) { e.preventDefault(); if (catInput) catMoveFocus('down'); else moveFocus('down'); return; }
+      return;
+    }
+    // SMB 表单弹层：焦点只在弹层内移动，避免方向键跑到被遮住的背景按钮上
+    if ($('smbModal').className.indexOf('on') >= 0) {
+      var sdir = code === 37 ? 'left' : code === 39 ? 'right' :
+                 code === 38 ? 'up' : code === 40 ? 'down' : '';
+      if (sdir) { e.preventDefault(); moveFocus(sdir, $('smbModal')); return; }
+    }
+    // SMB 卡片是 div（内部要放编辑 / 删除按钮），按 OK 需手动触发 click
+    if ((code === 13 || code === 66) && document.activeElement &&
+        String(document.activeElement.className).indexOf('smb-card') >= 0) {
+      e.preventDefault(); document.activeElement.click(); return;
+    }
+    // 分类页可见且焦点在分类页某一层内：上下左右统一走逐层导航
+    if (catOn() && catRowOf(document.activeElement) >= 0 &&
+        (code === 37 || code === 38 || code === 39 || code === 40)) {
+      e.preventDefault();
+      catMoveFocus(code === 37 ? 'left' : code === 38 ? 'up' : code === 39 ? 'right' : 'down');
+      return;
+    }
+    if (code === 37) { e.preventDefault(); moveFocus('left'); }
+    else if (code === 39) { e.preventDefault(); moveFocus('right'); }
+    else if (code === 38) { e.preventDefault(); moveFocus('up'); }
+    else if (code === 40) { e.preventDefault(); moveFocus('down'); }
+  }, false);
+
+  /* ==== SMB:START 网盘列表 / 目录浏览 / 配置表单 ==== */
+  var smbShares = [], smbMode = 'list', smbCurId = '', smbCurPath = '/', smbParent = '';
+  var smbCurItems = [], smbCurName = '', smbEditing = '', smbDelId = '', smbDelTimer = 0;
+
+  function smbOn() { return $('smb') && $('smb').className.indexOf('on') >= 0; }
+  function smbEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+  function smbSize(n) {
+    if (!n || n < 0) return '';
+    if (n >= 1073741824) return (n / 1073741824).toFixed(1) + ' GB';
+    if (n >= 1048576) return (n / 1048576).toFixed(0) + ' MB';
+    return Math.max(1, Math.round(n / 1024)) + ' KB';
+  }
+  function smbById(id) {
+    for (var i = 0; i < smbShares.length; i++) if (smbShares[i].id === id) return smbShares[i];
+    return null;
+  }
+  function smbUrlFor(id, p) {
+    // 首页本身就加载在 http://127.0.0.1:端口/，播放器可直接访问本机代理流
+    return location.origin + '/smb?id=' + encodeURIComponent(id) +
+           '&path=' + encodeURIComponent(p);
+  }
+  function smbUrl(p) { return smbUrlFor(smbCurId, p); }
+
+  /**
+   * 统一的 SMB 播放入口：把网盘文件包装成一个「点播影片」，
+   * 再走 play() → startExo() → window.exo.play，和在线点播完全同一套：
+   * 点播播放器界面（选集 / 播放菜单 / 画面比例 / 解码方式）、观看记录、断点续播。
+   */
+  function smbStart(spec) {
+    var item = {
+      name: spec.name,
+      pic: '',
+      sourceName: 'SMB 网盘 · ' + (spec.shareName || '本地共享'),
+      sourceKey: 'smb',
+      // 进度按「网盘 + 文件完整路径」独立记忆，换文件不会串进度
+      vodId: encodeURIComponent(spec.id) + '__' + encodeURIComponent(spec.path),
+      smb: true,
+      smbId: spec.id,
+      smbPath: spec.path,
+      smbParent: spec.parent,
+      smbShareName: spec.shareName || ''
+    };
+    curDetail = { item: item, episodes: spec.episodes, index: spec.index || 0 };
+    play(curDetail.index);
+  }
+
+  /** 从观看记录 / 手机推送打开 SMB 影片：重建同目录选集，再按上次进度续播 */
+  function openSmbDetail(item, after) {
+    text('dtName', item.name || 'SMB 网盘');
+    text('dtTitle', item.name || '');
+    text('dtInfo', item.sourceName || 'SMB 网盘');
+    text('dtDesc', '正在读取网盘目录…');
+    $('dtCover').src = '';
+    $('eps').innerHTML = '';
+    go('detail');
+    req('GET', '/api/smb/browse?id=' + encodeURIComponent(item.smbId || '') +
+               '&path=' + encodeURIComponent(item.smbParent || '/'), null, function (d) {
+      if (!d || !d.ok) {
+        text('dtDesc', '网盘读取失败：' + ((d && d.error) || '请检查 NAS 是否在线'));
+        return;
+      }
+      var items = d.items || [], vids = [], eps = [], idx = 0;
+      for (var i = 0; i < items.length; i++) if (items[i].video) vids.push(items[i]);
+      for (var j = 0; j < vids.length; j++) {
+        eps.push(smbUrlFor(item.smbId, vids[j].path));
+        if (vids[j].path === item.smbPath) idx = j;
+      }
+      if (!eps.length) { eps = [smbUrlFor(item.smbId, item.smbPath)]; idx = 0; }
+      var last = readProgress(item);
+      if (last && last.index < eps.length) idx = last.index;
+      curDetail = { item: item, episodes: eps, index: idx };
+      text('dtDesc', 'SMB 网盘 · ' + (d.path || '') + ' · 共 ' + eps.length + ' 集');
+      renderEps();
+      renderSourcesBar();
+      setTimeout(function () {
+        var el = $('eps').querySelector('.ep'); if (el) try { el.focus(); } catch (e) {}
+      }, 60);
+      if (after) after();
+    });
+  }
+
+  /** 搜索结果页「SMB 网盘」栏：渲染命中项 */
+  function renderSmbHits(d) {
+    var bar = $('smbResBar'), row = $('smbHitsRow');
+    if (!d || !d.ok || !d.hasShares) { bar.style.display = 'none'; return; }
+    smbHits = d.items || [];
+    if (!smbHits.length) {
+      text('smbHitsHd', 'SMB 网盘 · 没有匹配的文件');
+      row.innerHTML = '<div class="smb-hits-note">按文件名匹配；片名放在文件夹名里也能搜到，可换个关键词试试</div>';
+      return;
+    }
+    text('smbHitsHd', 'SMB 网盘 · 找到 ' + smbHits.length + ' 个文件' +
+         (d.truncated ? '（目录较多或耗时已达上限，仅显示部分）' : ''));
+    var h = '';
+    for (var i = 0; i < smbHits.length; i++) {
+      var it = smbHits[i];
+      h += '<button type="button" class="smb-hit focusable" data-smb-hit="' + i + '">' +
+             '<span class="sh-nm"><span class="sh-ic">▶</span>' + smbEsc(it.name) + '</span>' +
+             '<span class="sh-sub">' + smbEsc(it.shareName) + ' · ' + smbSize(it.size) +
+               ' · ' + smbEsc(it.parent) + '</span>' +
+           '</button>';
+    }
+    if (d.truncated) h += '<div class="smb-hits-note">只显示前 ' + smbHits.length +
+                          ' 个，换更具体的关键词可缩小范围</div>';
+    row.innerHTML = h;
+    row.onclick = function (e) {
+      var t = e.target; if (!t || !t.closest) return;
+      var b = t.closest('[data-smb-hit]');
+      if (b) smbPlayHit(smbHits[parseInt(b.getAttribute('data-smb-hit'), 10)]);
+    };
+    // 在线片源为空时把焦点落到 SMB 第一项，并修正空页文案，避免焦点丢失 / 误导
+    if (!$('resGrid').querySelector('.card')) {
+      var e2 = $('resEmpty');
+      if (e2.style.display !== 'none')
+        e2.innerHTML = '在线片源没有找到<br>上方「SMB 网盘」里有 ' + smbHits.length + ' 个匹配文件';
+      setTimeout(function () {
+        var f = row.querySelector('.smb-hit'); if (f) try { f.focus(); } catch (er) {}
+      }, 60);
+    }
+  }
+
+  /** 点搜索命中项：先拉一次所在目录，把同目录视频组成选集，再走点播播放器 */
+  function smbPlayHit(hit) {
+    if (!hit) return;
+    req('GET', '/api/smb/browse?id=' + encodeURIComponent(hit.id) +
+               '&path=' + encodeURIComponent(hit.parent), null, function (d) {
+      var eps = [], idx = 0, items = (d && d.ok && d.items) ? d.items : [], vids = [];
+      for (var i = 0; i < items.length; i++) if (items[i].video) vids.push(items[i]);
+      for (var j = 0; j < vids.length; j++) if (vids[j].path === hit.path) idx = j;
+      for (var k = 0; k < vids.length; k++) eps.push(smbUrlFor(hit.id, vids[k].path));
+      if (!eps.length) { eps = [smbUrlFor(hit.id, hit.path)]; idx = 0; }
+      smbStart({ id: hit.id, shareName: hit.shareName, name: hit.name,
+                 path: hit.path, parent: hit.parent, episodes: eps, index: idx });
+    });
+  }
+
+  function openSmb() {
+    smbMode = 'list';
+    go('smb');
+    loadSmbShares();
+    // 默认焦点不给输入框，避免一进页面就弹软键盘
+    setTimeout(function () { var b = $('btnSmbAdd'); if (b) try { b.focus(); } catch (e) {} }, 60);
+  }
+  function loadSmbShares(cb) {
+    req('GET', '/api/smb', null, function (d) {
+      smbShares = (d && d.shares) || [];
+      if (smbMode === 'list') renderSmbShares();
+      if (cb) cb();
+    });
+  }
+  function renderSmbShares() {
+    $('smbTitle').textContent = 'SMB 网盘';
+    $('btnSmbAdd').style.display = '';
+    $('btnSmbUp').style.display = 'none';
+    $('btnSmbList').style.display = 'none';
+    $('smbCrumb').innerHTML = '已添加 <b>' + smbShares.length + '</b> 个网盘 · 点卡片进入浏览，右上角可编辑 / 删除';
+    var h = '';
+    if (!smbShares.length) {
+      h = '<div class="smb-empty">还没有添加 SMB 网盘<br>点右上角「添加网盘」，或在手机后台「播放设置 → SMB 网盘」里填写，电视端会自动同步</div>';
+    } else {
+      for (var i = 0; i < smbShares.length; i++) {
+        var s = smbShares[i];
+        h += '<div class="smb-card focusable" tabindex="0" data-smb-id="' + smbEsc(s.id) + '">' +
+               '<button type="button" class="smb-mini del" data-smb-del="' + smbEsc(s.id) + '">✕ 删除</button>' +
+               '<button type="button" class="smb-mini" data-smb-edit="' + smbEsc(s.id) + '">✎ 编辑</button>' +
+               '<span class="smb-ic">▣</span>' +
+               '<div class="smb-nm">' + smbEsc(s.name || s.host) + '</div>' +
+               '<div class="smb-sub">' + smbEsc(s.host) + (s.port && s.port !== 445 ? ':' + s.port : '') +
+                   ' / ' + smbEsc(s.share) + '</div>' +
+               '<div class="smb-sub">' + smbEsc(s.user || '匿名') +
+                   (s.hasPass ? ' · 已设密码' : '') + '</div>' +
+             '</div>';
+      }
+    }
+    $('smbGrid').innerHTML = h;
+    $('smbGrid').onclick = smbGridClick;
+  }
+
+  function smbEnter(id) {
+    var s = smbById(id);
+    smbCurId = id;
+    smbMode = 'browse';
+    smbCurName = (s && (s.name || s.host)) || 'SMB';
+    smbBrowse('');   // 留空让后端用该网盘的「起始目录」
+  }
+  function smbBrowse(path) {
+    $('smbCrumb').innerHTML = '读取中…';
+    req('GET', '/api/smb/browse?id=' + encodeURIComponent(smbCurId) +
+               '&path=' + encodeURIComponent(path || ''), null, renderSmbBrowse);
+  }
+  function renderSmbBrowse(d) {
+    $('btnSmbAdd').style.display = 'none';
+    $('btnSmbList').style.display = '';
+    if (!d || !d.ok) {
+      smbParent = '';
+      $('btnSmbUp').style.display = 'none';
+      $('smbTitle').textContent = smbCurName;
+      $('smbCrumb').innerHTML = '<b>读取失败</b>';
+      $('smbGrid').innerHTML = '<div class="smb-empty">' + smbEsc((d && d.error) || '无法连接服务器') +
+          '<br><span style="font-size:15px">检查地址 / 共享名 / 账号密码，或回列表修改</span></div>';
+      return;
+    }
+    smbCurPath = d.path || '/';
+    smbParent = d.parent || '';
+    smbCurItems = d.items || [];
+    smbCurName = d.name || smbCurName;
+    $('smbTitle').textContent = smbCurName;
+    $('btnSmbUp').style.display = smbParent ? '' : 'none';
+    $('smbCrumb').innerHTML = '当前目录：<b>' + smbEsc(smbCurPath) + '</b> · ' +
+        smbCurItems.length + ' 项 · 视频按 OK 播放，同目录视频会进选集列表';
+    var h = '';
+    if (!smbCurItems.length) h = '<div class="smb-empty">这个目录是空的</div>';
+    for (var i = 0; i < smbCurItems.length; i++) {
+      var it = smbCurItems[i];
+      h += '<div class="smb-card focusable" tabindex="0" data-smb-idx="' + i + '">' +
+             '<span class="smb-ic ' + (it.dir ? 'folder' : '') + '">' + (it.dir ? '▤' : '▶') + '</span>' +
+             '<div class="smb-nm">' + smbEsc(it.name) + '</div>' +
+             '<div class="smb-sub">' + (it.dir ? '文件夹' : smbSize(it.size)) + '</div>' +
+           '</div>';
+    }
+    $('smbGrid').innerHTML = h;
+    $('smbGrid').onclick = smbGridClick;
+    setTimeout(function () { var c = $('smbGrid').querySelector('.smb-card'); if (c) try { c.focus(); } catch (e) {} }, 50);
+  }
+
+  function smbGridClick(e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var del = t.closest('[data-smb-del]');
+    if (del) { smbAskDel(del.getAttribute('data-smb-del'), del); return; }
+    var ed = t.closest('[data-smb-edit]');
+    if (ed) { openSmbForm(ed.getAttribute('data-smb-edit')); return; }
+    var card = t.closest('.smb-card');
+    if (!card) return;
+    if (smbMode === 'list') { smbEnter(card.getAttribute('data-smb-id')); return; }
+    var idx = parseInt(card.getAttribute('data-smb-idx'), 10);
+    var it = smbCurItems[idx];
+    if (!it) return;
+    if (it.dir) smbBrowse(it.path);
+    else smbPlay(it);
+  }
+
+  function smbPlay(it) {
+    var vids = [], idx = 0, eps = [];
+    for (var i = 0; i < smbCurItems.length; i++) if (smbCurItems[i].video) vids.push(smbCurItems[i]);
+    for (var j = 0; j < vids.length; j++) if (vids[j].path === it.path) idx = j;
+    for (var k = 0; k < vids.length; k++) eps.push(smbUrl(vids[k].path));
+    if (!eps.length) eps = [smbUrl(it.path)];
+    smbStart({ id: smbCurId, shareName: smbCurName, name: it.name,
+               path: it.path, parent: smbCurPath, episodes: eps, index: idx });
+  }
+
+  /** 返回键：浏览态先回上级 → 回网盘列表 → 回首页 */
+  function smbBack() {
+    if (smbMode === 'browse' && smbParent && smbParent !== smbCurPath) { smbBrowse(smbParent); return; }
+    if (smbMode === 'browse') {
+      smbMode = 'list'; loadSmbShares();
+      setTimeout(function () { var b = $('btnSmbAdd'); if (b) try { b.focus(); } catch (e) {} }, 60);
+      return;
+    }
+    back();
+  }
+  function smbAskDel(id, btn) {
+    if (smbDelId === id) {
+      clearTimeout(smbDelTimer); smbDelId = '';
+      req('POST', '/api/smb', { action: 'del', id: id }, function (d) {
+        if (!d || !d.ok) { toast((d && d.error) || '删除失败'); return; }
+        toast('已删除'); smbMode = 'list'; loadSmbShares();
+      });
+    } else {
+      smbDelId = id;
+      btn.textContent = '再按一次删除';
+      btn.classList.add('warn');
+      toast('再按一次确认删除');
+      smbDelTimer = setTimeout(function () { smbDelId = ''; if (smbMode === 'list') loadSmbShares(); }, 3500);
+    }
+  }
+
+  // ---- 添加 / 编辑表单 ----
+  function openSmbForm(id) {
+    smbEditing = id || '';
+    var s = id ? smbById(id) : null;
+    $('sfTitle').textContent = s ? '编辑 SMB 网盘' : '添加 SMB 网盘';
+    $('sfName').value = s ? (s.name || '') : '';
+    $('sfHost').value = s ? (s.host || '') : '';
+    $('sfPort').value = s ? (s.port || 445) : 445;
+    $('sfShare').value = s ? (s.share || '') : '';
+    $('sfDomain').value = s ? (s.domain || '') : '';
+    $('sfUser').value = s ? (s.user || '') : '';
+    $('sfPass').value = '';                  // 从不回显密码
+    $('sfRoot').value = s ? (s.root || '/') : '/';
+    $('sfMsg').textContent = (s && s.hasPass) ? '密码已保存，留空表示不修改' : '';
+    $('smbModal').classList.add('on');
+    setTimeout(function () { var b = $('sfSave'); if (b) try { b.focus(); } catch (e) {} }, 50);
+  }
+  function closeSmbForm() { $('smbModal').classList.remove('on'); }
+  function smbFormNext(cur) {
+    var ids = ['sfName', 'sfHost', 'sfPort', 'sfShare', 'sfDomain', 'sfUser', 'sfPass', 'sfRoot'];
+    var i = ids.indexOf(cur.id);
+    var n = (i >= 0 && i + 1 < ids.length) ? $(ids[i + 1]) : $('sfSave');
+    if (n) try { n.focus(); } catch (e) {}
+  }
+  function saveSmbForm() {
+    var host = $('sfHost').value.replace(/^\s+|\s+$/g, '');
+    var sh = $('sfShare').value.replace(/^\s+|\s+$/g, '');
+    if (!host) { $('sfMsg').textContent = '服务器地址不能为空'; return; }
+    if (!sh) { $('sfMsg').textContent = '共享名不能为空'; return; }
+    var share = {
+      name: $('sfName').value.replace(/^\s+|\s+$/g, ''),
+      host: host, port: parseInt($('sfPort').value, 10) || 445, share: sh,
+      domain: $('sfDomain').value.replace(/^\s+|\s+$/g, ''),
+      user: $('sfUser').value.replace(/^\s+|\s+$/g, ''),
+      pass: $('sfPass').value,
+      root: $('sfRoot').value.replace(/^\s+|\s+$/g, '') || '/'
+    };
+    var isNew = !smbEditing;
+    $('sfMsg').textContent = '保存中…';
+    req('POST', '/api/smb', { action: isNew ? 'add' : 'update', id: smbEditing, share: share }, function (d) {
+      if (!d || !d.ok) { $('sfMsg').textContent = (d && d.error) || '保存失败'; return; }
+      closeSmbForm();
+      toast(isNew ? '已添加，正在打开…' : '已保存');
+      loadSmbShares(function () { if (isNew) smbEnter(d.id); });
+    });
+  }
+
+  on($('btnSmb'), 'click', openSmb);
+  on($('btnSmbAdd'), 'click', function () { openSmbForm(''); });
+  on($('btnSmbBack'), 'click', function () { smbBack(); });
+  on($('btnSmbUp'), 'click', function () { if (smbParent) smbBrowse(smbParent); });
+  on($('btnSmbList'), 'click', function () { smbMode = 'list'; loadSmbShares(); });
+  on($('sfSave'), 'click', saveSmbForm);
+  on($('sfCancel'), 'click', closeSmbForm);
+  /* ==== SMB:END ==== */
+
+  // ---------------------------------------------------------------- 绑定
+  on($('btnSearch'), 'click', function () { sugHide(); doSearch($('q').value); });
+  // 两个搜索框共用的回车直搜（document 级 keydown 也会处理，searching 标志防重复）
+  function bindSearchEnter(inp) {
+    if (!inp) return;
+    on(inp, 'keydown', function (e) {
+      if (e.keyCode === 13 && !sugOpen) { e.preventDefault(); doSearch(inp.value); }
+    });
+  }
+  bindSearchEnter($('q'));
+  bindSearchEnter($('catQ'));
+  // 影视分类页顶部：搜索走与首页完全相同的 /api/search + 豆瓣联想
+  on($('btnCatSearch'), 'click', function () { sugHide(); doSearch($('catQ').value); });
+  on($('btnCatBack'), 'click', function () { sugHide(); back(); });
+  // 首页「手机扫码」入口已收进右下角二维码卡片：按 OK / 点击都能打开管理页弹窗
+  on($('cornerQr'), 'click', openQr);
+  // 手机版「设置」：打开本机设置页（只绑 127.0.0.1，局域网不可达）
+  on($('btnSettings'), 'click', function () { location.href = '/m/'; });
+  on($('btnScan'), 'click', openQr);
+  on($('btnCloseQr'), 'click', closeQr);
+  on($('btnClear'), 'click', openClear);
+  on($('btnClearYes'), 'click', function () { doClearCache(false); });
+  on($('btnClearNo'), 'click', closeClear);
+  on($('btnHistory'), 'click', openHistory);
+  on($('btnBackHis'), 'click', function () { back(); });
+  on($('btnLive'), 'click', function () {
+    // 原生直播（Media3 内核，不走网页 MSE，避免黑屏循环）：短按直接全屏播放，
+    // 播放页内单击屏幕呼出选台抽屉、长按呼出工具/订阅管理。
+    if (window.liveBridge && window.liveBridge.play) {
+      try { window.liveBridge.play(); return; } catch (e) {}
+    }
+    openLive();   // 降级：普通浏览器里没有原生桥时仍用网页版
+  });
+  // 单击视频区切换：隐藏时呼出三栏 UI，显示时立即收起（像 IPTV 播放器一样 toggle）
+  var liveTapGuard = 0;
+  on($('liveScreen'), 'click', function (e) {
+    // 点侧边按钮/视频本身不切换；只有点在空白的屏幕区域才 toggle
+    if (e && e.target && e.target.closest && e.target.closest('.live-sidebtns')) return;
+    var now = Date.now();
+    if (now - liveTapGuard < 350) return;   // 去抖：避免 OK 键同时触发 keydown+click 造成来回切换
+    liveTapGuard = now;
+    if (liveUiHidden) showLiveUi(LIVE_UI_MS);
+    else hideLiveUi(false, true);
+  });
+  on($('btnLiveRefresh'), 'click', function () { loadLive(true); });
+  on($('btnEpg'), 'click', function () { toast('节目单：当前订阅源未提供 EPG 数据'); });
+  on($('btnBackLive'), 'click', function () { back(); });
+
+  // 首页不再显示「继续观看」卡片：仅清理可能的历史残留块。
+  // 观看记录只通过顶部「观看记录」按钮进入的独立页面展示；syncHistory 同步逻辑保持不变。
+  function renderContinue() {
+    var old = $('continueWrap');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+  }
+
+  // ---------------------------------------------------------------- 启动
+  loadConfig(function () {
+    // 冷启动若已自动进入「影视分类」页，就别把焦点抢回首页搜索按钮
+    setTimeout(function () {
+      if ($('home') && $('home').className.indexOf('on') >= 0) {
+        var b = $('btnSearch'); if (b) b.focus();
+      }
+    }, 100);
+    setInterval(pollPush, 2000);
+    // 先从服务端同步观看记录（双向合并），再渲染最近播放
+    syncHistory(renderContinue);
+  });
+})();
+</script>
+</body>
+</html>

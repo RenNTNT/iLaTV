@@ -1,0 +1,112 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ilatv.tv'
+    compileSdk 35
+
+    // 签名密钥随工程一起提供（app/debug.keystore），保证任何人用本工程编出的
+    // release 包都与已发布的 iLaTV APK 签名一致，可以直接覆盖安装、不丢数据。
+    // 这是 Android 标准调试密钥，仅用于侧载分发；正式上架请换成自己的发布密钥。
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 34
+        versionName "2.0"
+    }
+
+    // ------------------------------------------------------------------------
+    // 统一工程、两版 App：main 目录共用全部 Java / assets / res，只有下面这几项
+    // 按 flavor 区分。两个 applicationId 不同 → 可同时安装、SharedPreferences /
+    // 缓存 / 观看记录 / 订阅各自独立，互不干扰；签名仍是同一把 debug.keystore。
+    // 端口也错开，万一同一台设备装了两版也不会抢 9600。
+    // ------------------------------------------------------------------------
+    flavorDimensions += 'device'
+    productFlavors {
+        tv {
+            dimension 'device'
+            applicationId 'com.ilatv.tv'
+            versionCode 76
+            buildConfigField 'boolean', 'IS_PHONE', 'false'
+            buildConfigField 'int', 'BASE_PORT', '9600'
+            buildConfigField 'boolean', 'EXPOSE_LAN', 'true'
+        }
+        phone {
+            dimension 'device'
+            applicationId 'com.ilatv.phone'
+            versionCode 21
+            buildConfigField 'boolean', 'IS_PHONE', 'true'
+            buildConfigField 'int', 'BASE_PORT', '9601'
+            // 手机版只绑 127.0.0.1 回环，局域网访问不到 → 不扫码、不做遥控服务端
+            buildConfigField 'boolean', 'EXPOSE_LAN', 'false'
+        }
+    }
+
+    buildTypes {
+        release {
+            // 开启 R8：自动移除第三方库（主要是 NanoHTTPD）里不可达的代码路径。
+            // 未压缩时 classes.dex 约 8MB，其中大量是本项目用不到的 SSL / multipart / Cookie 等通用实现。
+            // 配套 proguard-rules.pro 保留了 WebView JS 桥接方法。
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 用 debug 签名产出可直接侧载安装的 release APK（非 debuggable）
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // AGP 8 默认不生成 BuildConfig；本工程用 BuildConfig.IS_PHONE / BASE_PORT /
+    // EXPOSE_LAN / APPLICATION_ID 区分两版，必须显式打开
+    buildFeatures {
+        buildConfig = true
+    }
+
+    // ------------------------------------------------------------------------
+    // Java 资源瘦身：bcprov-jdk18on 把后量子密码（Picnic/LowMC）的常量表
+    // 以 .bin.properties 形式塞在 jar 里，3 个文件合计 1.2MB 会被 Gradle 原样
+    // 打进 APK 的 Java resources（R8 只裁剪 classes.dex，管不到这些资源）。
+    // 本项目只用到 jcifs 的 SMB1/2/3 协商与 NTLM 认证，完全不走 PQC / X.509
+    // 证书校验 / Kotlin 反射，以下资源全部排除，功能零影响。
+    // ------------------------------------------------------------------------
+    packagingOptions {
+        resources {
+            excludes += [
+                'org/bouncycastle/pqc/**',
+                'org/bouncycastle/x509/CertPathReviewerMessages*.properties',
+                'kotlin/**',
+                'META-INF/*.kotlin_module'
+            ]
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.google.zxing:core:3.5.3'
+    // 内置 ExoPlayer 播放引擎：2.19.1 是最后一个支持 minSdk 19 的稳定版，
+    // 纯 Java、无 native 库、无需 coreLibraryDesugaring，兼容 Android 5.0+。
+    // 只引 core + hls，播放界面自绘，避免 ui 模块拉入 recyclerview/media 等额外依赖。
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.19.1'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.19.1'
+    // 原生直播播放内核（Media3）：从精简首页工程移植，包名 androidx.media3 与上面的
+    // com.google.android.exoplayer2 完全隔离，两套引擎可共存。直播不走网页 MSE，避免黑屏循环。
+    implementation 'androidx.media3:media3-exoplayer:1.2.1'
+    implementation 'androidx.media3:media3-exoplayer-hls:1.2.1'
+    // SMB 网盘：jcifs-ng 支持 SMB1/2/3、中文目录名、非标端口与 Range 读取。
+    // 由内置 HTTP 服务把 SMB 文件代理成本地 HTTP 流交给 ExoPlayer 播放，
+    // 因此播放器本身不需要认识 smb:// 协议。
+    implementation 'eu.agno3.jcifs:jcifs-ng:2.1.10'
+    implementation 'org.slf4j:slf4j-nop:1.7.36'
+}

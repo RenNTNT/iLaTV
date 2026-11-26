@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>设置</title>
+<style>
+/* ===== 主题色（v72：全局，两版共用一套色板）=====
+   服务端在 <html> 上注入 data-theme；:root 默认值 = 现有配色，
+   所以 ember / 未注入 / 老 WebView 不支持 var() 时界面与历版逐像素一致。
+   只换强调色 / 按钮 / 选中态 / 高亮 / 链接，浅底与排版色一律不动。 */
+:root{--ac-brand:#ff6b4a;--ac:#ff5a3c;--ac2:#2d7dff;--ac2b:#2f7dff;--ac-txt:#ff8a6a;--ac-lite:#ffb3a1;--ac-lite-b:#8fb8ff;--ac-ink:#0b8b8b;--ac-ink-b:#2f6fd0;--ac-soft:#e8f0ff;--ac-deep:#5a2318;--ac-deep2:#1d2c4d;--ac-rgb:255,90,60;--ac2-rgb:45,125,255}
+html[data-theme="ember"]{--ac-on:#c2410c;--ac-brand:#ff6b4a;--ac:#ff5a3c;--ac2:#2d7dff;--ac2b:#2f7dff;--ac-txt:#ff8a6a;--ac-lite:#ffb3a1;--ac-lite-b:#8fb8ff;--ac-ink:#0b8b8b;--ac-ink-b:#2f6fd0;--ac-soft:#e8f0ff;--ac-deep:#5a2318;--ac-deep2:#1d2c4d;--ac-rgb:255,90,60;--ac2-rgb:45,125,255}
+html[data-theme="mint"]{--ac-on:#0b6b4a;--ac-brand:#34d399;--ac:#0d9668;--ac2:#0ca678;--ac2b:#0ca678;--ac-txt:#4ade9e;--ac-lite:#a7f3d0;--ac-lite-b:#7fe0c0;--ac-ink:#0b8b6f;--ac-ink-b:#0a7d63;--ac-soft:#dcf7ee;--ac-deep:#0d3b30;--ac-deep2:#123c33;--ac-rgb:13,150,104;--ac2-rgb:12,166,120}
+html[data-theme="ocean"]{--ac-on:#1c5fb8;--ac-brand:#5b9bff;--ac:#2f7dff;--ac2:#1f6fd0;--ac2b:#1f6fd0;--ac-txt:#7aa9ff;--ac-lite:#b8d2ff;--ac-lite-b:#a8c8ff;--ac-ink:#1c6fd0;--ac-ink-b:#1c6fd0;--ac-soft:#e4eeff;--ac-deep:#172f55;--ac-deep2:#1c3358;--ac-rgb:47,125,255;--ac2-rgb:31,111,208}
+html[data-theme="violet"]{--ac-on:#5b3bc4;--ac-brand:#9b83ff;--ac:#7c5cff;--ac2:#6741d9;--ac2b:#6741d9;--ac-txt:#b39cff;--ac-lite:#d4c8ff;--ac-lite-b:#c4b5fd;--ac-ink:#5f3fd0;--ac-ink-b:#5f3fd0;--ac-soft:#eee9ff;--ac-deep:#2a1f4d;--ac-deep2:#2e2352;--ac-rgb:124,92,255;--ac2-rgb:103,65,217}
+html[data-theme="rose"]{--ac-on:#b32458;--ac-brand:#ff6b9c;--ac:#f0437b;--ac2:#d6336c;--ac2b:#d6336c;--ac-txt:#ff8ab0;--ac-lite:#ffc2d8;--ac-lite-b:#ffb3ce;--ac-ink:#c22b64;--ac-ink-b:#c22b64;--ac-soft:#ffe8f0;--ac-deep:#48182e;--ac-deep2:#4a1e33;--ac-rgb:240,67,123;--ac2-rgb:214,51,108}
+/* ===== 明暗模式（v73）：中性色变量，暗色默认=历版原值 ===== */
+:root{--fg-on:#fff;--ac-on:#c2410c;--ac-txt-on:var(--ac-txt);--ac-lite-on:var(--ac-lite);--ac-liteb-on:var(--ac-lite-b);--n-0b0d12:#0b0d12;--n-0d9668:#0d9668;--n-111722:#111722;--n-111826:#111826;--n-141a25:#141a25;--n-161b26:#161b26;--n-1a2130:#1a2130;--n-1b2331:#1b2331;--n-1e2533:#1e2533;--n-232b3a:#232b3a;--n-2a3448:#2a3448;--n-2f7dff:#2f7dff;--n-33405a:#33405a;--n-4d5a70:#4d5a70;--n-6b7688:#6b7688;--n-7c5cff:#7c5cff;--n-7f8b9e:#7f8b9e;--n-8b96a9:#8b96a9;--n-9aa6b8:#9aa6b8;--n-cfd8e6:#cfd8e6;--n-dbe4f2:#dbe4f2;--n-e6edf7:#e6edf7;--n-e8ecf4:#e8ecf4;--n-f0437b:#f0437b;--n-ff5a3c:#ff5a3c;--n-ff8a6b:#ff8a6b;}
+html[data-mode="light"]{--fg-on:#1c1c1e;--ac-brand:var(--ac-on);--ac-txt-on:var(--ac-on);--ac-lite-on:var(--ac-on);--ac-liteb-on:var(--ac-on);--n-0b0d12:#f5f5f8;--n-0d9668:#cad8d4;--n-111722:#e9ebef;--n-111826:#e9ebef;--n-141a25:#e9ebef;--n-161b26:#e9ebef;--n-1a2130:#e9ebef;--n-1b2331:#e9ebef;--n-1e2533:#e9ebef;--n-232b3a:#dadee4;--n-2a3448:#dadde4;--n-2f7dff:#44526a;--n-33405a:#cacfd8;--n-4d5a70:#536179;--n-6b7688:#5a6372;--n-7c5cff:#4b446a;--n-7f8b9e:#4b5463;--n-8b96a9:#4a5364;--n-9aa6b8:#485466;--n-cfd8e6:#384457;--n-dbe4f2:#384457;--n-e6edf7:#384557;--n-e8ecf4:#384257;--n-f0437b:#6a4450;--n-ff5a3c:#6a4944;--n-ff8a6b:#6a4c44;}
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--n-0b0d12,#0b0d12);color:var(--n-e8ecf4,#e8ecf4);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",Helvetica,Arial,sans-serif;font-size:15px}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 14px 60px}
+  h1{font-size:20px;margin:6px 0 16px}
+  h1 span{font-size:13px;color:var(--n-7f8b9e,#7f8b9e);font-weight:400;margin-left:6px}
+  .sub{color:var(--n-7f8b9e,#7f8b9e);font-size:13px;line-height:1.7;margin-bottom:14px}
+  .tabs{display:-webkit-flex;display:flex;background:var(--n-141a25,#141a25);border-radius:12px;padding:4px;margin-bottom:16px}
+  .tabs div{-webkit-flex:1;flex:1;text-align:center;padding:10px 0;border-radius:9px;color:var(--n-9aa6b8,#9aa6b8);font-size:15px}
+  .tabs div.on{background:var(--ac,#ff5a3c);color:#fff;font-weight:600}
+  .pane{display:none}.pane.on{display:block}
+  /* TV 推送下的二级目录 */
+  .subtabs{display:-webkit-flex;display:flex;background:var(--n-111722,#111722);border:1px solid var(--n-232b3a,#232b3a);
+    border-radius:10px;padding:4px;margin-bottom:14px}
+  .subtabs div{-webkit-flex:1;flex:1;text-align:center;padding:9px 0;border-radius:7px;
+    color:var(--n-9aa6b8,#9aa6b8);font-size:14px}
+  .subtabs div.on{background:#28324a;color:#fff;font-weight:600}
+  .subpane{display:none}.subpane.on{display:block}
+  .ch-item{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+    background:var(--n-141a25,#141a25);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+  .ch-item .ci{flex:1;min-width:0}
+  .ch-item .ci .nm{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ch-item .ci .mt{font-size:12px;color:var(--n-7f8b9e,#7f8b9e);margin-top:4px}
+  .ch-item .btn{margin-left:10px;flex:0 0 auto}
+  .filebox{background:var(--n-141a25,#141a25);border:1px dashed var(--n-33405a,#33405a);border-radius:11px;padding:16px;text-align:center}
+  .filebox input[type=file]{width:100%;font-size:13px;color:var(--n-9aa6b8,#9aa6b8);margin-bottom:12px}
+  .prog{height:8px;background:var(--n-232b3a,#232b3a);border-radius:5px;overflow:hidden;margin-top:12px;display:none}
+  .prog.on{display:block}
+  .prog i{display:block;height:100%;width:0;background:var(--ac,#ff5a3c);transition:width .2s}
+  .sr{display:-webkit-flex;display:flex}
+  .sr .btn{margin-left:8px}
+  input[type=text],input[type=number],input[type=password]{width:100%;background:var(--n-161b26,#161b26);border:1px solid var(--n-232b3a,#232b3a);border-radius:10px;
+    padding:12px 13px;color:var(--n-e8ecf4,#e8ecf4);font-size:16px;outline:none}
+  input:focus{border-color:var(--ac,#ff5a3c)}
+  .btn{border:0;border-radius:10px;background:var(--ac,#ff5a3c);color:#fff;font-size:16px;padding:12px 16px;
+    white-space:nowrap;font-weight:600}
+  .btn.gray{background:var(--n-232b3a,#232b3a);color:var(--n-cfd8e6,#cfd8e6);font-weight:400}
+  .btn:active{opacity:.8}
+  .btn.sm{font-size:13px;padding:8px 12px;border-radius:8px}
+  .list{margin-top:14px}
+  .item{display:-webkit-flex;display:flex;background:var(--n-141a25,#141a25);border-radius:11px;padding:10px;margin-bottom:10px}
+  .item>img,.item>.noimg{margin-right:10px}
+  .item img{width:62px;height:88px;object-fit:cover;border-radius:8px;background:var(--n-1b2331,#1b2331);flex:0 0 auto}
+  .item .noimg{width:62px;height:88px;border-radius:8px;background:var(--n-1b2331,#1b2331);flex:0 0 auto;
+    display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;
+    color:var(--n-4d5a70,#4d5a70);font-size:11px;text-align:center}
+  .item .info{flex:1;min-width:0}
+  .item .nm{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .mt{font-size:12px;color:var(--n-7f8b9e,#7f8b9e);margin-top:4px;line-height:1.5;
+    overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .ops{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
+    -webkit-justify-content:center;justify-content:center}
+  .item .ops .btn{margin-bottom:6px}
+  .item .ops .btn:last-child{margin-bottom:0}
+  .empty{text-align:center;color:var(--n-6b7688,#6b7688);padding:36px 0;font-size:14px;line-height:1.9}
+  .srcrow{background:var(--n-141a25,#141a25);border-radius:11px;padding:10px;margin-bottom:10px}
+  .srcrow .line{display:-webkit-flex;display:flex;margin-bottom:8px;-webkit-align-items:center;align-items:center}
+  .srcrow .line .nm{margin-right:8px}
+  .srcrow .nm{flex:1}
+  .srcrow .del{background:#3a1d18;color:var(--n-ff8a6b,#ff8a6b);border:0;border-radius:8px;padding:10px 12px;font-size:13px}
+  /* 点播源 / 直播源共用：已添加的行只显示名称，一行放 启用 / 修改 / 测试 / 删除 四个小按钮 */
+  .srcrow.off{opacity:.55}
+  .srcrow .line{flex-wrap:nowrap}
+  .srcrow .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+  .srcrow .nm b{font-weight:600}
+  .srcrow .ms{display:block;font-size:11px;color:var(--ac-liteb-on,#8fb8ff);margin-top:3px;font-weight:400;white-space:nowrap}
+  .srcrow .mini{flex:0 0 auto;border:0;border-radius:8px;padding:8px 8px;font-size:12px;
+    margin-left:6px;white-space:nowrap;background:var(--n-232b3a,#232b3a);color:var(--n-cfd8e6,#cfd8e6)}
+  .srcrow .mini:active{opacity:.7}
+  .srcrow .mini.on{background:#173a28;color:#7fe0a6}
+  .srcrow .mini.off{background:#3a2530;color:#e0a2a2}
+  .srcrow .mini.tst{background:var(--ac-deep2,#1d2c4d);color:var(--ac-lite-b,#8fb8ff)}
+  .srcrow .mini.del{background:#3a1d18;color:var(--n-ff8a6b,#ff8a6b)}
+  .srcrow .mini.ok{background:var(--ac,#ff5a3c);color:#fff}
+  .srcrow .mini:disabled{opacity:.5}
+  /* 「+ 添加」与「一键测试」并排；汇总结果显示在下方（点播源 / 直播源共用） */
+  .sr2{display:-webkit-flex;display:flex;gap:10px}
+  .sr2 .btn{flex:1;min-width:0}
+  .btn.testall{background:var(--ac-deep2,#1d2c4d);color:var(--ac-lite-b,#8fb8ff)}
+  /* 主题色选择（v72）：放在 tabs 上方，5 个类目都能看到 */
+  .theme-bar{background:var(--ac-deep2,#1d2c4d);border-radius:12px;padding:12px;margin-bottom:14px}
+  .tb-t{font-size:13px;color:var(--n-cfd8e6,#cfd8e6);margin-bottom:10px;overflow:hidden}
+  .tb-t span{float:right;color:var(--ac-lite-b,#8fb8ff)}
+  .theme-picks{display:-webkit-flex;display:flex;gap:8px}
+  .theme-pick{-webkit-flex:1;flex:1;min-width:0;background:var(--n-1a2130,#1a2130);border:2px solid transparent;
+    border-radius:9px;padding:8px 2px;font-size:11px;color:var(--n-9aa6b8,#9aa6b8);cursor:pointer;text-align:center}
+  .theme-pick.on{border-color:var(--ac,#ff5a3c);color:var(--fg-on,#fff);font-weight:600}
+  .theme-pick i{display:block;width:20px;height:20px;border-radius:50%;margin:0 auto 5px}
+  /* 背景明暗（v73）：与主题色同一条，所有类目可见 */
+  .tb-mode{display:-webkit-flex;display:flex;gap:8px;-webkit-align-items:center;align-items:center;
+    margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.10)}
+  .tb-mode>span{-webkit-flex:1;flex:1;font-size:12px;color:#cfd8e6}
+  .mode-pick{background:rgba(255,255,255,.09);border:2px solid transparent;border-radius:8px;
+    padding:6px 12px;font-size:12px;color:#cfd8e6;cursor:pointer}
+  .mode-pick.on{border-color:var(--ac,#ff5a3c);color:#fff;font-weight:600}
+  /* 分组管理行：复用 .srcrow 深色卡片，只是更紧凑 */
+  .grp-row{padding:8px 10px;margin-bottom:6px}
+  .grp-row .line{margin-bottom:0}
+  #grpMsg{color:var(--ac-liteb-on,#8fb8ff)}
+  /* 分组管理在直播源页末尾，给固定底部「保存并同步」留出空间 */
+  #p-live{padding-bottom:96px}
+  .live-row{background:var(--n-141a25,#141a25);border-radius:11px;padding:11px;margin-bottom:10px}
+  .live-row.off{opacity:.55}
+  .live-row .lr-top{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;margin-bottom:8px}
+  .live-row .lr-top .nm{flex:1;font-size:14px;font-weight:600;color:var(--n-dbe4f2,#dbe4f2)}
+  .live-row input[type=text]{width:100%;margin-bottom:8px}
+  .sw{display:inline-block;position:relative;width:46px;height:26px;border-radius:13px;background:#394154;
+    -webkit-transition:background .2s;transition:background .2s;flex-shrink:0}
+  .sw.on{background:#2f9e5b}
+  .sw i{position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;
+    -webkit-transition:left .2s;transition:left .2s}
+  .sw.on i{left:23px}
+  .live-row .lr-ops{display:-webkit-flex;display:flex;gap:8px;-webkit-align-items:center;align-items:center}
+  .live-row .lr-ops .del,.live-row .lr-ops .tst{border:0;border-radius:8px;padding:8px 12px;font-size:13px}
+  .live-row .lr-ops .tst{background:var(--ac-deep2,#1d2c4d);color:var(--ac-lite-b,#8fb8ff)}
+  .live-row .lr-ops .sp{flex:1}
+  .live-count{font-size:12px;color:var(--n-6b7688,#6b7688);margin-left:8px}
+  .live-scale{padding:12px;margin-bottom:14px;background:var(--n-141a25,#141a25);
+    border:1px solid var(--n-2a3448,#2a3448);border-radius:11px}
+  .live-scale .ls-hd{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;font-size:13px}
+  .live-scale .ls-hd b{-webkit-flex:1;flex:1;color:var(--n-e8ecf4,#e8ecf4);font-weight:600}
+  .live-scale .ls-hd span{color:var(--ac-txt-on,#ff8a6a);background:var(--n-1a2130,#1a2130);
+    border-radius:20px;padding:3px 10px;font-size:12px;white-space:nowrap}
+  .live-scale input[type=range]{width:100%;height:28px;margin-top:6px;
+    accent-color:var(--ac,#ff5a3c);cursor:pointer}
+  .live-scale .ls-tip{font-size:11px;color:var(--n-8b96a9,#8b96a9);margin-top:2px}
+  .hint{color:var(--n-6b7688,#6b7688);font-size:12px;line-height:1.7;margin-top:8px}
+  .row2{display:-webkit-flex;display:flex}
+  .row2>div{margin-right:12px}
+  .row2>div:last-child{margin-right:0}
+  .row2>div{flex:1}
+  label{display:block;font-size:13px;color:var(--n-8b96a9,#8b96a9);margin:0 0 6px}
+  .savebar{position:fixed;left:0;right:0;bottom:0;background:rgba(11,13,18,.96);padding:10px 14px;
+    border-top:1px solid var(--n-1e2533,#1e2533)}
+  .savebar .inner{max-width:640px;margin:0 auto;display:-webkit-flex;display:flex}
+  .savebar .inner .btn+.btn{margin-left:10px}
+  .savebar .btn{flex:1;text-align:center}
+  .toast{position:fixed;left:50%;bottom:84px;-webkit-transform:translateX(-50%);transform:translateX(-50%);
+    background:rgba(30,37,51,.97);color:#fff;padding:10px 18px;border-radius:9px;font-size:14px;
+    opacity:0;transition:opacity .2s;pointer-events:none;z-index:99;max-width:90%;text-align:center}
+  .toast.on{opacity:1}
+  .epsbox{margin-top:10px;padding-top:10px;border-top:1px solid var(--n-1e2533,#1e2533);display:none}
+  .epsbox.on{display:block}
+  .epsgrid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-top:8px}
+  .epsgrid button{width:62px;margin:0 6px 6px 0;font-size:13px;padding:9px 2px}
+  .epsgrid button{background:var(--n-1a2130,#1a2130);border:0;border-radius:8px;padding:10px 4px;color:var(--n-cfd8e6,#cfd8e6);font-size:13px}
+  .epsgrid button:active{background:var(--ac,#ff5a3c)}
+  .badge{display:inline-block;background:var(--n-232b3a,#232b3a);color:var(--n-9aa6b8,#9aa6b8);font-size:11px;border-radius:5px;padding:1px 6px;margin-left:6px}
+  .srcbar{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin-top:8px}
+  .srcbar button{background:var(--n-1a2130,#1a2130);border:1px solid var(--n-2a3448,#2a3448);color:var(--n-9aa6b8,#9aa6b8);font-size:12px;
+    border-radius:6px;padding:5px 9px;margin:0 6px 6px 0;max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .srcbar button.cur{background:var(--ac-deep,#5a2318);border-color:var(--ac,#ff5a3c);color:var(--ac-lite,#ffb3a1)}
+  .srclabel{font-size:11px;color:var(--n-6b7688,#6b7688);width:100%;margin-bottom:2px}
+
+/* ===== 亮色模式：播放器仍是黑画面，黑区内文字保持浅色 ===== */
+html[data-mode="light"] .savebar{background:rgba(255,255,255,.96);border-top-color:#dde3ee}
+html[data-mode="light"] .theme-bar{background:#eef2f8;border:1px solid #dde3ee}
+html[data-mode="light"] .tb-t,
+html[data-mode="light"] .tb-mode>span{color:#5c6470}
+html[data-mode="light"] .tb-t span{color:var(--ac-on,#c2410c)}
+html[data-mode="light"] .mode-pick{background:#fff;border-color:#dde3ee;color:#5c6470}
+html[data-mode="light"] .mode-pick.on{border-color:var(--ac,#ff5a3c);background:var(--ac-soft,#e8f0ff);color:var(--ac-on,#c2410c)}
+html[data-mode="light"] .theme-pick.on{color:var(--fg-on,#1c1c1e)}
+html[data-mode="light"] input::placeholder{color:#9aa6b8;-webkit-text-fill-color:#9aa6b8}
+html[data-mode="light"] .live-player,
+html[data-mode="light"] .live-screen,
+html[data-mode="light"] .live-screen video{background:#000}
+html[data-mode="light"] .live-player-hd,
+html[data-mode="light"] .live-ctrl{background:rgba(10,16,28,.92);color:#c9d5e6}
+html[data-mode="light"] .live-now{color:#eaf1fb}
+html[data-mode="light"] .live-side{color:#c2cfe2}
+html[data-mode="light"] .live-placeholder{color:#8b96a9}
+html[data-mode="light"] .srcrow .del,
+html[data-mode="light"] .srcrow .mini.del{color:#ff8a6b}
+</style>
+
+
+<style>
+  /* ===== 手机版设置页专属（只打包进 phone flavor）===== */
+  #backHome{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;
+    color:var(--n-ff8a6b,#ff8a6b);font-size:15px;padding:2px 0 12px;cursor:pointer;font-weight:600}
+  #backHome .bk{font-size:28px;line-height:1;margin-right:8px;font-weight:300}
+  #backHome:active{opacity:.7}
+  /* TV 推送整块功能在手机版去掉；DOM 保留仅为让原有 JS 初始化不报错，
+     入口与显示全部封死，没有任何路径能触发推送 */
+  #p-search{display:none!important}
+  body.phone h1{font-size:22px}
+  body.phone .sub{font-size:13px;line-height:1.6}
+
+  /* ===== v77 手机端「播放设置」卡片风：参考电视端网页后台系统设置的显示格式。
+     只换排版格式（标题 + 右侧控件 + 详情折叠），配色仍跟随手机端主题色与明暗模式，
+     不搬电视端的深色/亮色底。所有规则以 #p-set 限定，其它四个 tab 零影响。 ===== */
+  #p-set{padding-bottom:96px}
+  #p-set .setcard{background:var(--n-141a25,#141a25);
+    border:1px solid var(--n-2a3448,#2a3448);border-radius:14px;
+    padding:14px 15px;margin-bottom:10px}
+  #p-set .sc-hd{display:-webkit-flex;display:flex;align-items:center;gap:12px;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+  #p-set .sc-t{-webkit-flex:1;flex:1;min-width:0;font-size:16px;font-weight:600;
+    color:var(--n-e8ecf4,#e8ecf4);line-height:1.35}
+  #p-set .sc-c{-webkit-flex:0 0 auto;flex:0 0 auto;max-width:60%;
+    display:-webkit-flex;display:flex;gap:8px;align-items:center}
+  #p-set .sc-v{-webkit-flex:0 0 auto;flex:0 0 auto;font-size:12px;
+    color:var(--n-9aa6b8,#9aa6b8);background:var(--n-232b3a,#232b3a);
+    border-radius:20px;padding:4px 10px;white-space:nowrap}
+  #p-set .sc-v.ok{background:rgba(var(--ac-rgb,255,90,60),.16);color:var(--ac-txt-on,#ff8a6a)}
+  #p-set .setcard select,
+  #p-set .setcard input[type=number]{
+    width:100%;box-sizing:border-box;background:var(--n-1a2130,#1a2130);
+    border:1px solid var(--n-2a3448,#2a3448);color:var(--n-e8ecf4,#e8ecf4);
+    border-radius:9px;padding:9px 10px;font-size:14px;outline:none}
+  #p-set .setcard select:focus,
+  #p-set .setcard input[type=number]:focus{border-color:var(--ac2b,#2f7dff)}
+  #p-set .sc-c input[type=number]{width:76px;text-align:center;flex:0 0 auto}
+  #p-set .sc-2{display:-webkit-flex;display:flex;gap:10px;margin-top:10px}
+  #p-set .sc-2>*{flex:1;min-width:0}
+  #p-set .sc-2 .btn{width:100%}
+  #p-set .setcard .btn{padding:9px 12px;font-size:14px;border-radius:9px}
+  #p-set #decoderInfo{background:var(--n-111826,#111826);
+    border:1px solid var(--n-2a3448,#2a3448);border-radius:10px;
+    padding:10px;color:var(--n-9aa6b8,#9aa6b8);font-size:12px;line-height:1.6;
+    margin-top:10px;max-height:38px;overflow:hidden}
+  #p-set #decoderInfo.expanded{max-height:none}
+  #p-set .sc-ft{display:-webkit-flex;display:flex;align-items:center;gap:10px;margin-top:8px}
+  #p-set .sc-sub{-webkit-flex:1;flex:1;min-width:0;font-size:12px;color:var(--n-8b96a9,#8b96a9)}
+  #p-set .sc-more{flex:0 0 auto;background:none;border:0;padding:2px 0;
+    color:var(--ac-txt-on,#ff8a6a);font-size:12px;cursor:pointer;white-space:nowrap}
+  #p-set .sc-long{display:none;font-size:12px;color:var(--n-8b96a9,#8b96a9);
+    line-height:1.7;margin-top:10px;padding-top:10px;
+    border-top:1px solid var(--n-2a3448,#2a3448)}
+  #p-set .sc-long.on{display:block}
+  #p-set .sc-long b{color:var(--n-cfd8e6,#cfd8e6)}
+  html[data-mode="light"] #p-set .setcard{background:#fff;border-color:#dde3ee}
+  html[data-mode="light"] #p-set .setcard select,
+  html[data-mode="light"] #p-set .setcard input[type=number]{
+    background:#f5f7fa;border-color:#dde3ee;color:#1c1c1e}
+  html[data-mode="light"] #p-set #decoderInfo{background:#f5f7fa;border-color:#dde3ee}
+  html[data-mode="light"] #p-set .sc-v{background:#f3f5f8;color:#5c6470}
+  @media (max-width:380px){
+    #p-set .sc-c{max-width:100%;width:100%;-webkit-flex:1 1 100%;flex:1 1 100%}
+    #p-set .sc-c input[type=number]{width:50%}
+  }
+
+</style>
+</head>
+<body class="phone">
+<div class="wrap">
+  <div id="backHome"><span class="bk">&lsaquo;</span>返回首页</div>
+  <h1 id="mTitle">设置</h1>
+
+  <!-- 主题色（v72）：全局，放在 tabs 上方，所有类目可见 -->
+  <div class="theme-bar">
+    <div class="tb-t">主题色（全局）<span id="themeVal">暖橙（经典）</span></div>
+    <div class="theme-picks" id="themePicks">
+        <button class="theme-pick" type="button" data-t="ember"><i style="background:#ff5a3c"></i>暖橙（经典）</button>
+        <button class="theme-pick" type="button" data-t="mint"><i style="background:#0d9668"></i>青绿</button>
+        <button class="theme-pick" type="button" data-t="ocean"><i style="background:#2f7dff"></i>海蓝</button>
+        <button class="theme-pick" type="button" data-t="violet"><i style="background:#7c5cff"></i>紫罗兰</button>
+        <button class="theme-pick" type="button" data-t="rose"><i style="background:#f0437b"></i>玫红</button>
+    </div>
+    <div class="tb-mode" id="modePicks">
+      <span>背景 · <span id="modeVal">深色背景</span></span>
+      <button class="mode-pick on" type="button" data-m="dark">深色</button>
+      <button class="mode-pick" type="button" data-m="light">亮色 ☀</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div data-p="p-his">观看记录</div>
+    <div class="on" data-p="p-src">点播源</div>
+    <div data-p="p-live">直播源</div>
+    <div data-p="p-smb">SMB 网盘</div>
+    <div data-p="p-set">播放设置</div>
+  </div>
+
+  <!-- TV 推送：手机版不提供，整块隐藏（保留 DOM 避免旧 JS 初始化报错） -->
+  <div class="pane" id="p-search">
+    <div class="subtabs" id="pushSubtabs">
+      <div class="on" data-s="s-vod">影视推送</div>
+      <div data-s="s-live">直播推送</div>
+      <div data-s="s-apk">APK 推送</div>
+    </div>
+
+    <!-- 影视推送 -->
+    <div class="subpane on" id="s-vod">
+      <div class="sr">
+        <input type="text" id="q" placeholder="输入影片名，如：庆余年">
+        <button class="btn" id="btnSearch">搜索</button>
+      </div>
+      <div class="list" id="resList"></div>
+      <div class="empty" id="resEmpty" style="display:none"></div>
+    </div>
+
+    <!-- 直播推送 -->
+    <div class="subpane" id="s-live">
+      <div class="sr">
+        <input type="text" id="liveQ" placeholder="输入频道/节目名，如：央视">
+        <button class="btn" id="btnLiveSearch">搜索</button>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn gray sm" id="btnLiveRefresh">刷新电视端频道列表</button>
+        <span class="hint" id="liveSrcInfo" style="margin-left:8px"></span>
+      </div>
+      <div class="list" id="liveResList"></div>
+      <div class="empty" id="liveResEmpty" style="display:none"></div>
+      <div class="hint">
+        搜索的是电视端直播源里的频道（所有已启用订阅 + 本机频道），点「推送」即在电视上直接播放该频道。
+        关键词支持频道名与分组名，多个词用空格分隔。
+      </div>
+    </div>
+
+    <!-- APK 推送 -->
+    <div class="subpane" id="s-apk">
+      <div class="hint" style="margin:0 0 12px">
+        选择本地 APK 推送到电视升级。推送完成后电视端会立即弹出安装界面，
+        用遥控器确认即可；<b>安装完成或取消后安装包会自动销毁</b>。
+      </div>
+      <div class="filebox">
+        <input type="file" id="apkFile" accept=".apk,application/vnd.android.package-archive">
+        <button class="btn" id="btnApkPush">推送 APK 到电视</button>
+        <div class="prog" id="apkProg"><i id="apkProgBar"></i></div>
+      </div>
+      <div class="hint" id="apkMsg"></div>
+      <div class="hint">
+        ⚠️ 升级包必须与当前 App 使用同一签名，否则系统安装器会拒绝安装。
+        手机与电视需在同一 WiFi；大文件上传时请保持页面在前台。
+      </div>
+    </div>
+  </div>
+
+  <!-- 观看记录（与电视端共享） -->
+  <div class="pane" id="p-his">
+    <div class="hint" style="margin-bottom:12px">
+      这里是电视端的观看记录，与电视实时同步。点影片可在电视上打开，点「删除」两端同步移除。
+    </div>
+    <div class="list" id="hisList"></div>
+    <div class="empty" id="hisEmpty" style="display:none">还没有观看记录</div>
+  </div>
+
+  <!-- 片源 -->
+  <div class="pane on" id="p-src">
+    <div id="srcList"></div>
+    <div class="sr2" style="margin-top:4px">
+      <button class="btn gray" id="btnAddSrc">+ 添加一个片源</button>
+      <button class="btn testall" id="btnTestAll">一键测试</button>
+    </div>
+    <div class="hint" id="srcTestSummary" style="display:none;margin-top:8px;color:var(--ac-liteb-on,#8fb8ff)"></div>
+    <div class="hint">
+      已添加的点播源只显示名称，地址在点「修改」后展开；每行可启用/停用、修改、测试（显示 ms）、删除。<br>
+      底部「一键测试」会并发测全部源并汇总耗时。地址填苹果CMS采集接口，格式形如 https://xxx.com/api.php/provide/vod。<br>
+      改完点底部「保存并同步」生效，电视端会自动刷新。
+    </div>
+    <!-- ===== TVBox 订阅导入（A 档：纯配置层，仅点播源 tab 内） ===== -->
+    <div class="srcrow" style="margin-top:16px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">导入 TVBox 订阅</div>
+      <input type="text" id="tvboxInput" placeholder="https://.../tvbox.json 或直接粘贴 JSON / 加密串">
+      <div class="row2" style="margin-top:8px">
+        <div>
+          <label>方式</label>
+          <select id="tvboxMode" style="width:100%;padding:10px;border-radius:8px;font-size:14px;background:var(--n-161b26,#161b26);color:var(--n-e8ecf4,#e8ecf4);border:1px solid var(--n-232b3a,#232b3a)">
+            <option value="append">追加去重</option>
+            <option value="replace">覆盖现有</option>
+          </select>
+        </div>
+        <div>
+          <label>内容</label>
+          <select id="tvboxWhat" style="width:100%;padding:10px;border-radius:8px;font-size:14px;background:var(--n-161b26,#161b26);color:var(--n-e8ecf4,#e8ecf4);border:1px solid var(--n-232b3a,#232b3a)">
+            <option value="both">点播 + 直播</option>
+            <option value="vod">仅点播</option>
+            <option value="live">仅直播</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn sm gray" id="btnTvboxPreview">预览</button>
+        <button class="btn sm" id="btnTvboxImport" style="margin-left:8px">导入</button>
+      </div>
+      <div class="hint" id="tvboxResult" style="display:none;color:var(--ac-liteb-on,#8fb8ff)"></div>
+      <div class="hint">
+        支持明文 JSON / Base64 / 「**」加密 / 多仓 txt / zip / gzip 订阅；只导入 <b>CMS JSON 点播站</b>与
+        <b>m3u/txt 直播订阅</b>，Spider(JAR)、remote、XML 源会跳过并计数。
+        导入后立即保存并刷新列表，当前未保存的编辑会丢失。
+      </div>
+    </div>
+  </div><!-- /p-src：TVBox 卡片在此 pane 内，切到其它 tab 自动隐藏 -->
+
+  <!-- 直播源（交互与「点播源」完全一致） -->
+  <div class="pane" id="p-live">
+    <div class="live-scale">
+      <div class="ls-hd"><b>边框大小</b><span id="liveUiVal">100%</span></div>
+      <input type="range" id="liveUiScale" min="50" max="200" step="5" value="100">
+      <div class="ls-tip">框宽 / 行高 / 徽章 + 框内字体一起缩放 · 电视直播菜单可 7 档快调</div>
+      <div class="ls-hd" style="margin-top:12px"><b>字体大小</b><span id="epgFontVal">100%</span></div>
+      <input type="range" id="epgFontScale" min="50" max="200" step="5" value="100">
+      <div class="ls-tip">节目单 / 频道信息文字单独缩放</div>
+    </div>
+    <div class="hint" style="margin-bottom:12px">
+      可添加多个 m3u 订阅源，电视端「IPTV 直播」会合并读取所有<b>已启用</b>的源。<br>
+      已添加的源只显示名称，地址在点「修改」后展开；每行可启用/停用、修改、测试（显示 ms 与频道数）、删除。<br>
+      底部「一键测试」会并发测全部源并汇总耗时。改完点底部「保存并同步」即在前台生效。
+    </div>
+    <div id="liveSubsList"></div>
+    <div class="sr2" style="margin-top:4px">
+      <button class="btn gray" id="btnAddLiveSub">+ 添加直播源</button>
+      <button class="btn testall" id="btnTestAllLive">一键测试</button>
+    </div>
+    <div class="hint" id="liveTestSummary" style="display:none;margin-top:8px;color:var(--ac-liteb-on,#8fb8ff)"></div>
+    <div class="hint" id="iptvInfo" style="margin-top:12px">提示：订阅地址需返回 m3u / txt 格式（含 #EXTINF 或 名称,地址）。</div>
+    <div class="hint" style="margin-top:14px">
+      启用的源会自动合并、同名频道合并多条线路；停用的源保留配置但不拉取。<br>
+      电视端正在播放直播时，保存后返回直播即自动重载新列表。<br>
+      直播流由电视端本机转发，解决跨域与防盗链问题。
+    </div>
+    <!-- 分组管理（v70）：显示 / 隐藏直播分组 -->
+    <div class="srcrow" style="margin-top:18px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">分组管理</div>
+      <div class="hint" style="margin-top:0;margin-bottom:10px">
+      隐藏的分组不会出现在 IPTV 直播的选台列表，也不参与上下换台；<br>
+      频道缓存始终保留全量，重新显示即可恢复。收藏夹与直播推送搜索不受影响。<br>
+      改完点「保存分组设置」，返回 IPTV 直播页即生效。
+      </div>
+      <input type="text" id="grpSearch" placeholder="搜索分组名（只过滤显示，不影响保存）">
+      <div class="sr2" style="margin-top:8px">
+        <button class="btn gray" id="grpShowAll">全部显示</button>
+        <button class="btn gray" id="grpHideAll">全部隐藏</button>
+      </div>
+      <div id="grpList" style="margin-top:10px"></div>
+      <div class="hint" id="grpSummary" style="margin-top:8px"></div>
+      <div style="margin-top:10px">
+        <button class="btn sm gray" id="grpReload">重新读取分组</button>
+        <button class="btn sm" id="grpSave" style="margin-left:8px">保存分组设置</button>
+      </div>
+      <div class="hint" id="grpMsg" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- 设置 -->
+  <div class="pane" id="p-set">
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">启动页</div><div class="sc-c"><select id="startupPage">
+        <option value="home">首页</option>
+        <option value="category">影视分类</option>
+        <option value="iptv">IPTV 直播</option>
+      </select></div></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">设为「影视分类」后，打开软件直接进入影视分类页，顶部可直接点播搜索，按返回键回首页。<br>
+        设为「IPTV 直播」后，打开软件直接进入上次观看的频道，按返回键回首页。<br>
+        电视端「功能菜单 → 启动设置」也能改这一项，两边实时同步；改动在下次打开软件生效。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">跳过片头 / 片尾</div><div class="sc-c">
+        <input type="number" id="skipIntro" min="0" max="600" placeholder="片头">
+        <input type="number" id="skipOutro" min="0" max="600" placeholder="片尾">
+      </div></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">左片头 / 右片尾（秒）· 填 0 表示不跳过。<br>
+        跳过片头：每集开始自动跳到第 N 秒。<br>
+        跳过片尾：片尾剩余 N 秒时自动播下一集。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">点播播放引擎</div><div class="sc-c"><select id="playEngine">
+        <option value="auto">自动选择（推荐）</option>
+        <option value="exo">内置 ExoPlayer</option>
+        <option value="sysdec">系统解码（MediaCodec 兼容优先）</option>
+      </select></div></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">只影响影视点播。<br>
+        「自动选择」：先用内置 ExoPlayer 播，遇到解码失败自动切换到系统解码重试，
+        从刚才的进度续播，不用手动换档；仍失败再返回选集。<br>
+        「内置 ExoPlayer」：只用内置硬解，解码失败不自动切换。<br>
+        「系统解码」：一上来就显式调用电视系统 MediaCodec 解码器，硬解初始化失败
+        自动回退软解，适合老设备、花屏或提示「解码失败」的片源。<br>
+        三档都在应用内播放，保留选集与跳过片头片尾，不会跳出应用。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">直播解码</div><div class="sc-c"><select id="liveDecodeMode">
+        <option value="auto">自动选择（推荐）</option>
+        <option value="exo">内置解码</option>
+        <option value="sysdec">系统解码（MediaCodec 兼容优先）</option>
+      </select></div></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">只影响 IPTV 直播，与上面的点播播放引擎分开记忆，改一边不动另一边。<br>
+        这里和电视端「功能菜单 → 解码方式」是同一份设置，两边改完实时同步；
+        在后台改完，正在播放的直播会立即按新档重建，不用退出重进。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">点播画面比例</div><div class="sc-c"><select id="vodAspect">
+        <option value="auto">自适应</option>
+        <option value="origin">原始比例（默认）</option>
+        <option value="full">全屏显示</option>
+      </select></div></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">只影响影视点播。和电视点播播放器「菜单键 → 画面比例」是同一份设置，两边实时同步。<br>
+        自适应：片源比例接近屏幕时自动铺满，差得多（如 4:3 老片、宽银幕电影）则完整显示留黑边；<br>
+        原始比例：恒按片源自身比例完整显示（默认）；全屏显示：恒保持比例裁剪铺满、无黑边。画面始终不变形。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">直播画面比例</div><div class="sc-c"><select id="liveAspect">
+        <option value="auto">自适应</option>
+        <option value="origin">原始比例（默认）</option>
+        <option value="full">全屏显示</option>
+      </select></div></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">只影响 IPTV 直播，与上面的点播画面比例分开记忆，改一边不动另一边。<br>
+        和电视端「功能菜单 → 画面比例」是同一份设置，两边改完实时同步；在后台改完，
+        正在播放的直播会立即按新比例重排，不用退出重进。<br>
+        自适应 / 原始比例 / 全屏显示三档含义与上面点播相同，默认「原始比例」，画面始终不变形。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">设备系统解码能力</div><div class="sc-v">只读</div></div>
+      <div id="decoderInfo">正在读取电视端解码器…</div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">这里列出电视系统 MediaCodec 实际提供的视频解码器。硬解列表里没有的编码，
+        「自动选择」在解码失败时会自动切到系统解码并尝试软解兜底。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">过滤成人分类</div><div class="sc-v ok" id="scFilterVal">—</div></div>
+      <div class="sc-2">
+        <div><button class="btn gray" id="btnFilterOn">开启（推荐）</button></div>
+        <div><button class="btn gray" id="btnFilterOff">关闭</button></div>
+      </div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">开启后，影视分类与搜索结果里会过滤掉成人分类；关闭则按片源原样展示。<br>
+        与电视端共用同一份配置，保存后立即生效。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">清除电视缓存</div><div class="sc-v">本机</div></div>
+      <div class="sc-2"><button class="btn gray" id="btnClearTv">清除播放记录与网络缓存</button></div>
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">清除电视端的播放进度、「继续观看」记录和图片等网络缓存；<br>
+        不会影响片源列表和跳过片头片尾等设置。</div>
+    </div>
+
+    <div class="setcard">
+      <div class="sc-hd"><div class="sc-t">数据备份 / 换包名迁移</div><div class="sc-v">JSON</div></div>
+      <div class="sc-2">
+        <div><button class="btn gray" id="btnBackupOut">导出备份文件</button></div>
+        <div><button class="btn gray" id="btnBackupIn">导入备份文件</button></div>
+      </div>
+      <input type="file" id="backupFile" accept=".json,application/json" style="display:none">
+      <div class="sc-ft"><div class="sc-sub"></div><button class="sc-more" type="button">详情 ›</button></div>
+      <div class="sc-long">导出会下载一份 JSON，包含片源、直播订阅、频道与点播收藏、观看记录、启动页、解码方式与画面比例、SMB 网盘等全部设置。<br>
+        换新包名的版本时：先在旧版导出 → 卸载旧版 → 装新版 → 在这里导入 → 重启 App 即可全部恢复。<br>
+        备份文件包含 SMB 网盘密码，请妥善保管、不要随意外发。</div>
+    </div>
+
+  </div>
+
+  <!-- SMB 网盘 -->
+  <div class="pane" id="p-smb">
+    <div class="hint" style="margin:0 0 12px">
+      添加局域网 SMB / Windows 共享 / NAS 共享，电视首页「SMB 网盘」里就能浏览目录并直接播放视频。<br>
+      密码只保存在电视本机，列表不回显；编辑时密码留空表示不修改。
+    </div>
+    <div id="smbList"></div>
+    <div class="srcrow" style="margin-top:12px;border:1px solid var(--n-2a3448,#2a3448)">
+      <div style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--n-dbe4f2,#dbe4f2)" id="msTitle">添加 SMB 网盘</div>
+      <div class="row2">
+        <div><label>名称（可留空）</label><input type="text" id="msName" placeholder="家里 NAS"></div>
+        <div><label>服务器地址 *</label><input type="text" id="msHost" placeholder="192.168.1.10"></div>
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <div><label>端口</label><input type="number" id="msPort" placeholder="445"></div>
+        <div><label>共享名 *</label><input type="text" id="msShare" placeholder="video"></div>
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <div><label>域（可留空）</label><input type="text" id="msDomain" placeholder="WORKGROUP"></div>
+        <div><label>用户名（可留空）</label><input type="text" id="msUser" placeholder="匿名留空"></div>
+      </div>
+      <div class="row2" style="margin-top:8px">
+        <div><label>密码（可留空）</label><input type="password" id="msPass" placeholder="编辑留空 = 不修改"></div>
+        <div><label>起始目录</label><input type="text" id="msRoot" placeholder="/"></div>
+      </div>
+      <div style="margin-top:12px;display:-webkit-flex;display:flex;gap:8px">
+        <button class="btn" id="btnSmbSave" style="flex:1">保存网盘</button>
+        <button class="btn gray" id="btnSmbReset" style="flex:1">清空 / 新增</button>
+      </div>
+      <div class="hint" id="msMsg"></div>
+      <div class="hint">支持 SMB1/2/3、中文目录名、非 445 端口；视频以本机 HTTP 流转发给播放器，可拖动进度条。</div>
+    </div>
+  </div>
+</div>
+
+<div class="savebar">
+  <div class="inner">
+    <button class="btn gray" id="btnReload">重新载入</button>
+    <button class="btn" id="btnSave">保存并同步</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  function $(id) { return document.getElementById(id); }
+  function on(el, ev, fn) { if (el) el.addEventListener(ev, fn, false); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  var tTimer;
+  function toast(m) {
+    var t = $('toast'); t.textContent = m; t.className = 'on';
+    clearTimeout(tTimer); tTimer = setTimeout(function () { t.className = ''; }, 2000);
+  }
+  function req(method, url, body, cb) {
+    var x = new XMLHttpRequest();
+    x.open(method, url, true);
+    x.timeout = 30000;
+    if (body) x.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      var d = null;
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      cb(d, x.status);
+    };
+    x.ontimeout = function () { cb(null, 0); };
+    x.onerror = function () { cb(null, 0); };
+    x.send(body ? JSON.stringify(body) : null);
+  }
+
+  // 数据备份 / 换包名迁移
+  on($('btnBackupOut'), 'click', function () {
+    req('GET', '/api/backup', null, function (d) {
+      if (!d || !d.ok) { toast('导出失败'); return; }
+      try {
+        var blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ilatv-backup.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+        toast('备份已导出到下载目录');
+      } catch (e) { toast('当前浏览器不支持下载'); }
+    });
+  });
+  on($('btnBackupIn'), 'click', function () { $('backupFile').click(); });
+  on($('backupFile'), 'change', function (ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var d = null;
+      try { d = JSON.parse(r.result); } catch (e) {}
+      if (!d || (!d.prefs && !d.config)) { toast('不是有效的 iLaTV 备份'); return; }
+      req('POST', '/api/backup', d, function (res) {
+        if (!res || res.error) { toast((res && res.error) || '导入失败'); return; }
+        toast('已恢复 ' + (res.restored || 0) + ' 项' +
+          (res.liveUpgraded ? '，内置直播源已升级' : '') + '，重启 App 生效');
+        setTimeout(function () { location.reload(); }, 1500);
+      });
+    };
+    r.readAsText(f);
+    ev.target.value = '';
+  });
+
+  // ---- tabs
+  var tabs = $('tabs').getElementsByTagName('div');
+  for (var i = 0; i < tabs.length; i++) {
+    on(tabs[i], 'click', (function (el) {
+      return function () {
+        for (var j = 0; j < tabs.length; j++) tabs[j].className = (tabs[j] === el ? 'on' : '');
+        var ps = ['p-search', 'p-his', 'p-src', 'p-live', 'p-smb', 'p-set'];
+        for (var k = 0; k < ps.length; k++) $(ps[k]).className = 'pane' + (ps[k] === el.getAttribute('data-p') ? ' on' : '');
+        if (el.getAttribute('data-p') === 'p-his') loadHistory();
+        if (el.getAttribute('data-p') === 'p-live') { loadIptvUrl(); grpLoad(true); }
+        if (el.getAttribute('data-p') === 'p-smb') loadSmb();
+      };
+    })(tabs[i]));
+  }
+
+  // ---- TV 推送：二级目录（影视 / 直播 / APK）
+  var subs = $('pushSubtabs').getElementsByTagName('div');
+  for (var si = 0; si < subs.length; si++) {
+    on(subs[si], 'click', (function (el) {
+      return function () {
+        for (var j = 0; j < subs.length; j++) subs[j].className = (subs[j] === el ? 'on' : '');
+        var ids = ['s-vod', 's-live', 's-apk'];
+        for (var k = 0; k < ids.length; k++)
+          $(ids[k]).className = 'subpane' + (ids[k] === el.getAttribute('data-s') ? ' on' : '');
+      };
+    })(subs[si]));
+  }
+
+  // ---- 直播推送：搜索电视端直播源里的频道
+  var liveResults = [];
+  function renderLiveResults(d) {
+    var box = $('liveResList'), empty = $('liveResEmpty');
+    box.innerHTML = '';
+    liveResults = (d && d.items) || [];
+    var srcTxt = { cache: '电视已缓存', fresh: '刚从订阅源拉取', fallback: '内置直播源' }[d && d.source] || '';
+    $('liveSrcInfo').textContent = d && d.channels
+      ? ('共 ' + d.channels + ' 个频道' + (srcTxt ? ' · ' + srcTxt : '')) : '';
+    if (!d || !d.ok || !liveResults.length) {
+      empty.style.display = 'block';
+      empty.innerHTML = (d && d.hint) ? esc(d.hint) : '没有匹配的频道<br>换个关键词，或先点「刷新电视端频道列表」';
+      return;
+    }
+    empty.style.display = 'none';
+    var h = '';
+    for (var i = 0; i < liveResults.length; i++) {
+      var it = liveResults[i];
+      h += '<div class="ch-item" data-i="' + i + '">' +
+             '<div class="ci"><div class="nm">' + esc(it.name) + '</div>' +
+             '<div class="mt">' + esc(it.group) + ' · ' + (it.lines || 1) + ' 条线路</div></div>' +
+             '<button class="btn sm" data-push="' + i + '">推送</button></div>';
+    }
+    if (d.truncated) h += '<div class="hint">仅显示前 ' + liveResults.length + ' 个结果，换个更具体的关键词可缩小范围</div>';
+    box.innerHTML = h;
+    box.onclick = function (e) {
+      var t = e.target;
+      if (!t || !t.getAttribute) return;
+      var idx = t.getAttribute('data-push');
+      if (idx === null) return;
+      pushLive(liveResults[parseInt(idx, 10)]);
+    };
+  }
+  function doLiveSearch(force) {
+    var wd = ($('liveQ').value || '').replace(/^\s+|\s+$/g, '');
+    $('liveResList').innerHTML = '<div class="empty">正在搜索电视端频道…</div>';
+    $('liveResEmpty').style.display = 'none';
+    req('GET', '/api/live-search?wd=' + encodeURIComponent(wd) + (force ? '&force=1' : ''), null,
+      function (d) {
+        if (!d) { toast('连接电视失败，确认同一 WiFi'); return; }
+        renderLiveResults(d);
+        if (force && d.channels) toast('已重新拉取 ' + d.channels + ' 个频道');
+      });
+  }
+  function pushLive(it) {
+    if (!it) return;
+    req('POST', '/api/push', { action: 'live', name: it.name, urls: it.urls || [] }, function (d) {
+      if (d && d.error) { toast(d.error); return; }
+      toast('已推送到电视：' + it.name);
+    });
+  }
+  on($('btnLiveSearch'), 'click', function () { doLiveSearch(false); });
+  on($('btnLiveRefresh'), 'click', function () { doLiveSearch(true); });
+  on($('liveQ'), 'keydown', function (e) {
+    if (e.keyCode === 13) { e.preventDefault(); doLiveSearch(false); }
+  });
+
+  // ---- APK 推送：二进制直传，电视端弹出安装界面，安装完自动销毁
+  on($('btnApkPush'), 'click', function () {
+    var f = $('apkFile').files && $('apkFile').files[0];
+    if (!f) { toast('请先选择 APK 文件'); return; }
+    if (!/\.apk$/i.test(f.name)) { toast('请选择 .apk 文件'); return; }
+    var msg = $('apkMsg'), prog = $('apkProg'), bar = $('apkProgBar');
+    $('btnApkPush').disabled = true;
+    prog.className = 'prog on'; bar.style.width = '0%';
+    msg.textContent = '正在上传 ' + f.name + '（' + Math.round(f.size / 1024 / 1024 * 10) / 10 + ' MB）…';
+    var x = new XMLHttpRequest();
+    x.open('POST', '/api/push-apk', true);
+    x.setRequestHeader('Content-Type', 'application/octet-stream');
+    x.setRequestHeader('X-File-Name', encodeURIComponent(f.name));
+    x.timeout = 180000;
+    if (x.upload) x.upload.onprogress = function (e) {
+      if (e.lengthComputable) {
+        var p = Math.round(e.loaded / e.total * 100);
+        bar.style.width = p + '%';
+        msg.textContent = '正在上传… ' + p + '%';
+      }
+    };
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      $('btnApkPush').disabled = false;
+      var d = null;
+      try { d = JSON.parse(x.responseText); } catch (er) {}
+      if (d && d.ok) {
+        bar.style.width = '100%';
+        msg.textContent = '✅ 已推送：' + d.name + '，电视端正在打开安装界面，请用遥控器确认。安装完成后安装包自动销毁。';
+        toast('已推送到电视，请在电视上确认安装');
+      } else {
+        prog.className = 'prog';
+        msg.textContent = '推送失败：' + ((d && d.error) || '连接电视失败，确认同一 WiFi');
+      }
+    };
+    x.ontimeout = function () {
+      $('btnApkPush').disabled = false; prog.className = 'prog';
+      msg.textContent = '上传超时，请检查 WiFi 后重试';
+    };
+    x.onerror = function () {
+      $('btnApkPush').disabled = false; prog.className = 'prog';
+      msg.textContent = '连接电视失败，确认同一 WiFi';
+    };
+    x.send(f);
+  });
+
+  // ---- 观看记录（与电视端共享，读写服务端 /api/history）
+  function fmtSec(sec) {
+    sec = parseInt(sec, 10) || 0;
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function fmtDate(ts) {
+    if (!ts) return '';
+    var d = new Date(ts);
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function loadHistory() {
+    var box = $('hisList');
+    box.innerHTML = '<div class="empty">加载中…</div>';
+    req('GET', '/api/history', null, function (d) {
+      var recs = (d && d.records) ? d.records : [];
+      box.innerHTML = '';
+      if (!recs.length) {
+        $('hisEmpty').style.display = 'block';
+        return;
+      }
+      $('hisEmpty').style.display = 'none';
+      for (var i = 0; i < recs.length; i++) {
+        (function (r) {
+          var div = document.createElement('div');
+          div.className = 'item';
+          var sub = '第 ' + ((parseInt(r.index, 10) || 0) + 1) + ' 集 · ' + fmtSec(r.time) +
+            (r.sourceName ? ' · ' + esc(r.sourceName) : '') + ' · ' + fmtDate(r.ts);
+          div.innerHTML =
+            (r.pic ? '<img src="' + esc(r.pic) + '" onerror="this.style.display=\'none\'">' : '<div class="noimg">无封面</div>') +
+            '<div class="info"><div class="nm">' + esc(r.name) + '</div><div class="mt">' + sub + '</div></div>' +
+            '<div class="ops"><button class="btn sm b-play">播放</button><button class="btn sm gray b-del">删除</button></div>';
+          on(div.querySelector('.b-play'), 'click', function () {
+            var pi = { sourceKey: r.sourceKey, vodId: r.vodId, name: r.name, pic: r.pic,
+              sourceName: r.sourceName, mergeKey: r.mergeKey, sources: r.sources || [] };
+            // SMB 网盘影片：带上目录信息，电视端才能重建选集并走点播播放器
+            if (r.smb) {
+              pi.smb = true; pi.smbId = r.smbId; pi.smbPath = r.smbPath;
+              pi.smbParent = r.smbParent; pi.smbShareName = r.smbShareName;
+            }
+            pushPlay(pi, parseInt(r.index, 10) || 0);
+          });
+          on(div.querySelector('.b-del'), 'click', function () {
+            req('POST', '/api/history', { action: 'del', key: r.key }, function () {
+              toast('已删除：' + r.name);
+              loadHistory();
+            });
+          });
+          box.appendChild(div);
+        })(recs[i]);
+      }
+    });
+  }
+
+  // ---- 配置
+  // ---- 边框 / 字体大小（v75）：拖动即保存，与直播菜单、网页后台共用一份配置 ----
+  function clampPct(v) {
+    v = parseInt(v, 10);
+    if (isNaN(v) || v < 50) return 100;
+    if (v > 200) return 200;
+    return v;
+  }
+  function applyScaleUi(ui, epg) {
+    ui = clampPct(ui); epg = clampPct(epg);
+    $('liveUiScale').value = ui; $('epgFontScale').value = epg;
+    $('liveUiVal').textContent = ui + '%'; $('epgFontVal').textContent = epg + '%';
+  }
+  function saveScale() {
+    var ui = clampPct($('liveUiScale').value), epg = clampPct($('epgFontScale').value);
+    applyScaleUi(ui, epg);
+    req('POST', '/api/config', { liveUiScale: ui, epgFontScale: epg }, function (d) {
+      toast((d && d.error) ? ('保存失败：' + d.error)
+                           : ('已保存：边框大小 ' + ui + '% · 字体大小 ' + epg + '%'));
+    });
+  }
+  on($('liveUiScale'), 'input', function () { $('liveUiVal').textContent = clampPct(this.value) + '%'; });
+  on($('epgFontScale'), 'input', function () { $('epgFontVal').textContent = clampPct(this.value) + '%'; });
+  on($('liveUiScale'), 'change', saveScale);
+  on($('epgFontScale'), 'change', saveScale);
+
+  function loadConfig() {
+    req('GET', '/api/config', null, function (d) {
+      if (!d) { toast('连接电视失败，确认同一 WiFi'); return; }
+      $('skipIntro').value = d.skipIntro || 0;
+      $('skipOutro').value = d.skipOutro || 0;
+      setFilter(d.filterAdult !== false);
+      // 系统播放器已移除：旧配置里的 system / web 等一律回落到自动选择
+      var pe = d.playEngine || d.vodDecodeMode || 'auto';
+      $('playEngine').value = (pe === 'exo' || pe === 'sysdec') ? pe : 'auto';
+      // 直播解码独立回显：优先用 Store 里的档位（电视菜单可能刚改过），
+      // 兼容旧后台的 decodeMode 字段
+      var lm = d.liveDecodeMode || 'auto';
+      $('liveDecodeMode').value = (lm === 'exo' || lm === 'sysdec') ? lm : 'auto';
+      // 画面比例只保留三档；旧配置里的 18:9 / 16:9 / 4:3 / 裁剪 / 背景模糊回落原始比例（默认）
+      var aspectOk = function (v) { return v === 'auto' || v === 'origin' || v === 'full'; };
+      var va = d.vodAspect;
+      $('vodAspect').value = aspectOk(va) ? va : 'origin';
+      var la = d.liveAspect;
+      $('liveAspect').value = aspectOk(la) ? la : 'origin';
+      $('startupPage').value = (d.startupPage === 'iptv' || d.startupPage === 'category')
+        ? d.startupPage : 'home';
+      // 上述三项功能手机版不提供，保存时也不提交；服务端 apiConfig 是
+      // 「按字段 merge」，不带这三个键即保留原有值，不会冲成默认。
+      loadSources(d.sources || []);
+      // 直播源由 /api/live-subs 单独加载（切到该 tab 时也会拉取）
+      req('GET', '/api/live-subs', null, function (s) {
+        if (s && s.subs) loadLiveSubs(s.subs);
+      });
+      loadDecoders();
+      applyTheme(d.theme || 'ember');   // 全局主题色回显（v72）
+      applyMode(d.mode || 'dark');      // 亮色 / 暗色背景回显（v73）
+      applyScaleUi(d.liveUiScale || 100, d.epgFontScale || 100);  // 边框 / 字体大小回显（v75）
+    });
+  }
+
+  // ---- 设备系统解码能力（只读展示）
+  function loadDecoders() {
+    req('GET', '/api/decoders', null, function (d) {
+      var box = $('decoderInfo');
+      if (!box) return;
+      if (!d || !d.ok) { box.textContent = '读取失败：' + ((d && d.error) || '连接电视失败'); return; }
+      var hw = [], sw = [];
+      for (var i = 0; i < (d.decoders || []).length; i++) {
+        var x = d.decoders[i];
+        var mime = String(x.mime || '').replace('video/', '');
+        if (x.hardware) { if (hw.indexOf(mime) < 0) hw.push(mime); }
+        else { if (sw.indexOf(mime) < 0) sw.push(mime); }
+      }
+      var html = '<b>硬解 ' + (d.hardwareCount || 0) + ' 项 / 软解 ' + (d.softwareCount || 0) + ' 项</b>';
+      html += '<br>硬解支持：' + (hw.length ? esc(hw.join('、')) : '无');
+      if (sw.length) html += '<br>另有软解：' + esc(sw.join('、'));
+      var modeName = function (m) {
+        return m === 'sysdec' ? '系统解码（兼容优先）' : (m === 'exo' ? '内置解码' : '自动选择');
+      };
+      var vod = d.vodDecodeMode || d.decodeMode || 'auto';
+      var live = d.liveDecodeMode || 'auto';
+      var aspectName = function (a) {
+        return ({ auto: '自适应', origin: '原始比例', full: '全屏显示' })[a] || '原始比例（默认）';
+      };
+      html += '<br>点播播放引擎：' + modeName(vod);
+      html += '<br>直播解码：' + modeName(live);
+      html += '<br>点播画面比例：' + aspectName(d.vodAspect);
+      html += '<br>直播画面比例：' + aspectName(d.liveAspect);
+      html += '<br>点播 / 直播的解码方式与画面比例各自分开记忆。';
+      box.innerHTML = html;
+    });
+  }
+  // ---- IPTV 直播源（交互与「点播源」完全一致：隐藏地址 / 启用 / 修改 / 测试(ms) / 删除 / 一键测试）
+  var liveSubs = [];   // {name, url, enabled, count}
+  var liveUi = [];     // {editing, ms, draft}
+  function loadLiveSubs(arr) {
+    liveSubs = []; liveUi = [];
+    for (var i = 0; i < arr.length; i++) {
+      liveSubs.push({ name: arr[i].name || '', url: arr[i].url || '',
+                      enabled: arr[i].enabled !== false, count: arr[i].count || '' });
+      liveUi.push({ editing: false, ms: '', draft: null });
+    }
+    renderLiveSubs();
+  }
+  function renderLiveSubs() {
+    var box = $('liveSubsList');
+    box.innerHTML = '';
+    for (var j = 0; j < liveSubs.length; j++) {
+      (function (idx) {
+        var s = liveSubs[idx], ui = liveUi[idx];
+        var row = document.createElement('div');
+        row.className = 'srcrow' + (s.enabled ? '' : ' off');
+        row.setAttribute('data-row', idx);
+        if (!ui.editing) {
+          row.innerHTML =
+            '<div class="line">' +
+              '<div class="nm"><b>' + esc(s.name || '未命名源') + '</b>' +
+                '<span class="ms">' + esc(ui.ms || '') + '</span></div>' +
+              '<button class="mini ' + (s.enabled ? 'on' : 'off') + '" data-act="toggle" data-i="' + idx + '">' +
+                (s.enabled ? '已启用' : '已停用') + '</button>' +
+              '<button class="mini" data-act="edit" data-i="' + idx + '">修改</button>' +
+              '<button class="mini tst" data-act="test" data-i="' + idx + '">测试</button>' +
+              '<button class="mini del" data-act="del" data-i="' + idx + '">删除</button>' +
+            '</div>';
+        } else {
+          var d = ui.draft || (ui.draft = { name: s.name, url: s.url });
+          row.innerHTML =
+            '<input type="text" data-i="' + idx + '" data-f="name" value="' + esc(d.name) + '" placeholder="源名称，如：直播电视">' +
+            '<input type="text" data-i="' + idx + '" data-f="url" value="' + esc(d.url) + '" ' +
+              'placeholder="https://example.com/tv.m3u" style="margin-top:8px">' +
+            '<div class="line" style="margin:8px 0 0;-webkit-justify-content:flex-end;justify-content:flex-end">' +
+              '<button class="mini ok" data-act="save" data-i="' + idx + '">保存</button>' +
+              '<button class="mini" data-act="cancel" data-i="' + idx + '">取消</button>' +
+              '<button class="mini del" data-act="del" data-i="' + idx + '">删除</button>' +
+            '</div>';
+        }
+        box.appendChild(row);
+      })(j);
+    }
+    // 编辑态输入只写 draft，点「取消」可完整还原
+    var inputs = box.getElementsByTagName('input');
+    for (var k = 0; k < inputs.length; k++) {
+      on(inputs[k], 'input', function (e) {
+        var t = e.target || e;
+        var idx = parseInt(t.getAttribute('data-i'), 10), ui = liveUi[idx];
+        if (ui && ui.draft) ui.draft[t.getAttribute('data-f')] = t.value;
+      });
+    }
+    var acts = box.querySelectorAll('[data-act]');
+    for (var m = 0; m < acts.length; m++) {
+      on(acts[m], 'click', function (e) {
+        var t = e.target || e;
+        var el = (t.getAttribute && t.getAttribute('data-act')) ? t : t.parentNode;
+        var act = el.getAttribute('data-act');
+        var idx = parseInt(el.getAttribute('data-i'), 10);
+        var ui = liveUi[idx];
+        if (!ui) return;
+        if (act === 'toggle') {
+          liveSubs[idx].enabled = !liveSubs[idx].enabled; renderLiveSubs();
+        } else if (act === 'edit') {
+          ui.draft = { name: liveSubs[idx].name, url: liveSubs[idx].url };
+          ui.editing = true; renderLiveSubs();
+        } else if (act === 'save') {
+          var nm = (ui.draft.name || '').trim(), url = (ui.draft.url || '').trim();
+          if (!nm) { toast('请填写源名称'); return; }
+          if (!/^https?:\/\//i.test(url)) { toast('地址必须以 http:// 或 https:// 开头'); return; }
+          liveSubs[idx].name = nm; liveSubs[idx].url = url;
+          ui.editing = false; ui.draft = null; ui.ms = ''; renderLiveSubs();
+        } else if (act === 'cancel') {
+          ui.editing = false; ui.draft = null; renderLiveSubs();
+        } else if (act === 'del') {
+          liveSubs.splice(idx, 1); liveUi.splice(idx, 1); renderLiveSubs();
+        } else if (act === 'test') {
+          testLiveSub(idx, el);
+        }
+      });
+    }
+    if (!liveSubs.length) box.innerHTML = '<div class="empty">还没有直播源，点下面按钮添加</div>';
+  }
+  function loadIptvUrl() {
+    req('GET', '/api/live-subs', null, function (d) {
+      loadLiveSubs(d && d.subs ? d.subs : []);
+    });
+  }
+  on($('btnAddLiveSub'), 'click', function () {
+    liveSubs.push({ name: '', url: '', enabled: true, count: '' });
+    liveUi.push({ editing: true, ms: '', draft: { name: '', url: '' } });
+    renderLiveSubs();
+  });
+  /* 直播源探测：经本机 /api/iptv 临时 url 参数读取一次订阅，从发起到收完响应计时。
+     结果 `XXX ms · 正常 · N 频道`，与点播源「测试」同样的 ms 展示；不改已保存配置。 */
+  function probeLive(idx, cb) {
+    var s = liveSubs[idx];
+    if (!s) { cb('已移除'); return; }
+    var url = (s.url || '').trim();
+    if (!/^https?:\/\//i.test(url)) { cb('地址无效'); return; }
+    var t0 = Date.now(), done = false;
+    function finish(txt) { if (done) return; done = true; cb(txt); }
+    var x = new XMLHttpRequest();
+    x.open('GET', '/api/iptv?force=1&url=' + encodeURIComponent(url), true);
+    x.timeout = 12000;
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      var ms = Date.now() - t0, d = null;
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (d && d.ok) {
+        var cnt = (d.count || 0) + ' 频道';
+        if (liveSubs[idx]) liveSubs[idx].count = cnt;
+        finish(ms + ' ms · 正常 · ' + cnt);
+      } else {
+        finish(ms + ' ms · ' + ((d && d.error) ? '读取失败' : 'HTTP ' + x.status));
+      }
+    };
+    x.ontimeout = function () { finish('超时 >12000 ms'); };
+    x.onerror = function () { finish('连接失败'); };
+    x.send(null);
+  }
+  function testLiveSub(idx, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    probeLive(idx, function (txt) {
+      if (liveUi[idx]) liveUi[idx].ms = txt;
+      btn.disabled = false; btn.textContent = '测试';
+      var m = btn.parentNode.querySelector('.ms'); if (m) m.textContent = txt;
+    });
+  }
+
+  // ---- TVBox 订阅导入（A 档）：解析在服务端 TvBoxImporter，这里只负责提交与回显
+  function tvboxBody(dry) {
+    var v = ($('tvboxInput').value || '').trim();
+    var isUrl = /^https?:\/\//i.test(v);
+    var what = $('tvboxWhat').value;
+    return {
+      url: isUrl ? v : '',
+      raw: isUrl ? '' : v,
+      mode: $('tvboxMode').value,
+      vod: what !== 'live',
+      live: what !== 'vod',
+      dryRun: !!dry
+    };
+  }
+  function showTvboxResult(d) {
+    var box = $('tvboxResult');
+    box.style.display = 'block';
+    if (!d) { box.textContent = '✗ 请求失败，检查网络'; return; }
+    if (d.error) { box.textContent = '✗ ' + d.error; return; }
+    var lines = [];
+    lines.push((d.dryRun ? '预览' : '导入完成') + '：点播 +' + d.vodAdded + '（跳过 ' + d.vodSkipped + '）'
+      + ' · 直播 +' + d.liveAdded + '（跳过 ' + d.liveSkipped + '）');
+    lines.push('配置共 ' + d.sitesTotal + ' 个站 / ' + d.livesTotal + ' 个直播，' + d.unsupported + ' 个不支持已跳过');
+    if (d.name) lines.push('配置名：' + d.name);
+    if (d.note) lines.push(d.note);
+    if (d.warnings && d.warnings.length) lines = lines.concat(d.warnings);
+    if (d.dryRun) {
+      var n = [], l = [], i;
+      for (i = 0; i < Math.min((d.vod || []).length, 5); i++) n.push(d.vod[i].name);
+      for (i = 0; i < Math.min((d.live || []).length, 5); i++) l.push(d.live[i].name);
+      if (n.length) lines.push('点播候选：' + n.join('、') + ((d.vod || []).length > 5 ? ' …' : ''));
+      if (l.length) lines.push('直播候选：' + l.join('、') + ((d.live || []).length > 5 ? ' …' : ''));
+    }
+    var html = '';
+    for (i = 0; i < lines.length; i++) html += (i ? '<br>' : '') + esc(lines[i]);
+    box.innerHTML = html;
+  }
+  function doTvbox(dry) {
+    var b = tvboxBody(dry);
+    if (!b.url && !b.raw) { toast('先填订阅地址或粘贴配置内容'); return; }
+    var box = $('tvboxResult');
+    box.style.display = 'block';
+    box.textContent = dry ? '正在解析…' : '正在导入…';
+    req('POST', '/api/tvbox', b, function (d) {
+      showTvboxResult(d);
+      if (d && d.ok && !d.dryRun) {
+        toast('已导入：点播 +' + d.vodAdded + ' · 直播 +' + d.liveAdded);
+        setTimeout(loadConfig, 400);   // 重新回显点播源与直播源
+      }
+    });
+  }
+  on($('btnTvboxPreview'), 'click', function () { doTvbox(true); });
+  on($('btnTvboxImport'), 'click', function () { doTvbox(false); });
+
+  var filterAdult = true;
+  // ---- 播放设置卡片（v77）：长说明默认收起，点「详情 ›」展开，不改动任何配置
+  var psetMore = document.querySelectorAll('#p-set .sc-more');
+  for (var pm = 0; pm < psetMore.length; pm++) {
+    on(psetMore[pm], 'click', function () {
+      var card = this.parentNode;
+      while (card && (card.className || '').indexOf('setcard') < 0) card = card.parentNode;
+      if (!card) return;
+      var longBox = card.querySelector('.sc-long');
+      if (!longBox) return;
+      // 不能用 indexOf('on')：'sc-long' 自带 on 子串，会永远判成已展开
+      var open = !longBox.classList.contains('on');
+      if (open) longBox.classList.add('on'); else longBox.classList.remove('on');
+      var dec = card.querySelector('#decoderInfo');
+      if (dec) { if (open) dec.classList.add('expanded'); else dec.classList.remove('expanded'); }
+      this.textContent = open ? '收起 ‹' : '详情 ›';
+    });
+  }
+
+  function setFilter(v) {
+    filterAdult = v;
+    $('btnFilterOn').className = 'btn ' + (v ? '' : 'gray');
+    $('btnFilterOff').className = 'btn ' + (v ? 'gray' : '');
+    var tag = $('scFilterVal');
+    if (tag) {
+      tag.textContent = v ? '已开启' : '已关闭';
+      tag.className = 'sc-v' + (v ? ' ok' : '');
+    }
+  }
+  on($('btnFilterOn'), 'click', function () { setFilter(true); });
+  on($('btnFilterOff'), 'click', function () { setFilter(false); });
+
+  // ---- 源列表（手机版：已添加的行只显示名称，地址在点「修改」后才出现）
+  var sources = [];   // {name, url, enabled}
+  var srcUi = [];     // 每行 UI 状态：{editing, ms, draft}
+  function loadSources(arr) {
+    sources = []; srcUi = [];
+    for (var i = 0; i < arr.length; i++) {
+      sources.push({ name: arr[i].name || '', url: arr[i].url || '', enabled: arr[i].enabled !== false });
+      srcUi.push({ editing: false, ms: '', draft: null });
+    }
+    renderSources();
+  }
+  function renderSources() {
+    var box = $('srcList');
+    box.innerHTML = '';
+    for (var j = 0; j < sources.length; j++) {
+      (function (idx) {
+        var s = sources[idx], ui = srcUi[idx];
+        var row = document.createElement('div');
+        row.className = 'srcrow' + (s.enabled ? '' : ' off');
+        row.setAttribute('data-row', idx);
+        if (!ui.editing) {
+          row.innerHTML =
+            '<div class="line">' +
+              '<div class="nm"><b>' + esc(s.name || '未命名源') + '</b>' +
+                '<span class="ms">' + esc(ui.ms || '') + '</span></div>' +
+              '<button class="mini ' + (s.enabled ? 'on' : 'off') + '" data-act="toggle" data-i="' + idx + '">' +
+                (s.enabled ? '已启用' : '已停用') + '</button>' +
+              '<button class="mini" data-act="edit" data-i="' + idx + '">修改</button>' +
+              '<button class="mini tst" data-act="test" data-i="' + idx + '">测试</button>' +
+              '<button class="mini del" data-act="del" data-i="' + idx + '">删除</button>' +
+            '</div>';
+        } else {
+          var d = ui.draft || (ui.draft = { name: s.name, url: s.url });
+          row.innerHTML =
+            '<input type="text" data-i="' + idx + '" data-f="name" value="' + esc(d.name) + '" placeholder="源名称">' +
+            '<input type="text" data-i="' + idx + '" data-f="url" value="' + esc(d.url) + '" ' +
+              'placeholder="https://xxx.com/api.php/provide/vod" style="margin-top:8px">' +
+            '<div class="line" style="margin:8px 0 0;-webkit-justify-content:flex-end;justify-content:flex-end">' +
+              '<button class="mini ok" data-act="save" data-i="' + idx + '">保存</button>' +
+              '<button class="mini" data-act="cancel" data-i="' + idx + '">取消</button>' +
+              '<button class="mini del" data-act="del" data-i="' + idx + '">删除</button>' +
+            '</div>';
+        }
+        box.appendChild(row);
+      })(j);
+    }
+    // 编辑态输入只写 draft，点「取消」可完整还原
+    var inputs = box.getElementsByTagName('input');
+    for (var k = 0; k < inputs.length; k++) {
+      on(inputs[k], 'input', function (e) {
+        var t = e.target || e;
+        var idx = parseInt(t.getAttribute('data-i'), 10), ui = srcUi[idx];
+        if (ui && ui.draft) ui.draft[t.getAttribute('data-f')] = t.value;
+      });
+    }
+    // 按钮：启用 / 修改 / 测试 / 删除 / 保存 / 取消
+    var acts = box.querySelectorAll('[data-act]');
+    for (var m = 0; m < acts.length; m++) {
+      on(acts[m], 'click', function (e) {
+        var t = e.target || e;
+        var el = (t.getAttribute && t.getAttribute('data-act')) ? t : t.parentNode;
+        var act = el.getAttribute('data-act');
+        var idx = parseInt(el.getAttribute('data-i'), 10);
+        var ui = srcUi[idx];
+        if (!ui) return;
+        if (act === 'toggle') {
+          sources[idx].enabled = !sources[idx].enabled; renderSources();
+        } else if (act === 'edit') {
+          ui.draft = { name: sources[idx].name, url: sources[idx].url };
+          ui.editing = true; renderSources();
+        } else if (act === 'save') {
+          var nm = (ui.draft.name || '').trim(), url = (ui.draft.url || '').trim().replace(/\/+$/, '');
+          if (!nm) { toast('请填写源名称'); return; }
+          if (!/^https?:\/\//i.test(url)) { toast('地址必须以 http:// 或 https:// 开头'); return; }
+          sources[idx].name = nm; sources[idx].url = url;
+          ui.editing = false; ui.draft = null; ui.ms = ''; renderSources();
+        } else if (act === 'cancel') {
+          ui.editing = false; ui.draft = null; renderSources();
+        } else if (act === 'del') {
+          sources.splice(idx, 1); srcUi.splice(idx, 1); renderSources();
+        } else if (act === 'test') {
+          testSrc(idx, el);
+        }
+      });
+    }
+    if (!sources.length) box.innerHTML = '<div class="empty">还没有片源，点下面按钮添加</div>';
+  }
+  on($('btnAddSrc'), 'click', function () {
+    sources.push({ name: '', url: '', enabled: true });
+    srcUi.push({ editing: true, ms: '', draft: { name: '', url: '' } });
+    renderSources();
+  });
+  /* 通用探测：经本机 /hls 代理转发一次采集接口请求，从发起到收完响应计时。
+     结果文本 cb(txt) 只回调一次；单行「测试」与「一键测试」共用这一份。 */
+  function probeSrc(idx, cb) {
+    var src = sources[idx];
+    if (!src) { cb('已移除'); return; }
+    var base = (src.url || '').replace(/\/+$/, '');
+    if (!/^https?:\/\//i.test(base)) { cb('地址无效'); return; }
+    var t0 = Date.now(), done = false;
+    function finish(txt) { if (done) return; done = true; cb(txt); }
+    var x = new XMLHttpRequest();
+    x.open('GET', '/hls?url=' + encodeURIComponent(base + '?ac=videolist&wd=iLaTV&pg=1'), true);
+    x.timeout = 12000;
+    x.onreadystatechange = function () {
+      if (x.readyState !== 4) return;
+      var ms = Date.now() - t0, ok = false;
+      try { var d = JSON.parse(x.responseText); ok = !!(d && (d.list || d.total || d.code)); } catch (e) {}
+      finish(x.status === 200 ? (ms + ' ms' + (ok ? ' · 正常' : ' · 无数据'))
+                             : (ms + ' ms · HTTP ' + x.status));
+    };
+    x.ontimeout = function () { finish('超时 >12000 ms'); };
+    x.onerror = function () { finish('连接失败'); };
+    x.send(null);
+  }
+  /* 单行测试：结果写回 srcUi 并更新该行名称下方的 .ms */
+  function testSrc(idx, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    probeSrc(idx, function (txt) {
+      if (srcUi[idx]) srcUi[idx].ms = txt;
+      btn.disabled = false; btn.textContent = '测试';
+      var m = btn.parentNode.querySelector('.ms'); if (m) m.textContent = txt;
+    });
+  }
+  /* 一键测试（点播源 / 直播源共用）：并发探测全部已添加源（含停用的），
+     逐个回填各行 ms，底部汇总「X/Y 个正常 · 平均 Z ms」。不改任何已保存配置。
+     cfg: {key, items(), ui(), probe(idx,cb), btn, sum, rowSel, empty} */
+  var testAllBusy = { src: false, live: false };
+  function runTestAll(cfg) {
+    if (testAllBusy[cfg.key]) return;
+    var items = cfg.items();
+    if (!items.length) { toast(cfg.empty); return; }
+    var ui = cfg.ui();
+    testAllBusy[cfg.key] = true;
+    var btn = $(cfg.btn), sum = $(cfg.sum);
+    var total = items.length, left = total, okCount = 0, sumMs = 0, msCount = 0;
+    btn.disabled = true; btn.textContent = '测试中…';
+    sum.style.display = 'block'; sum.textContent = '正在测试 0/' + total + ' …';
+    for (var i = 0; i < total; i++) {
+      (function (idx) {
+        cfg.probe(idx, function (txt) {
+          if (ui[idx]) ui[idx].ms = txt;
+          // 局部更新该行（编辑态没有 .ms，结果存于 ui，切回展示态即可见）
+          var row = document.querySelector(cfg.rowSel + '[data-row="' + idx + '"]');
+          if (row) { var m = row.querySelector('.ms'); if (m) m.textContent = txt; }
+          var mm = /^(\d+) ms/.exec(txt);
+          if (mm && txt.indexOf('正常') >= 0) {
+            okCount++; sumMs += parseInt(mm[1], 10); msCount++;
+          }
+          left--;
+          if (left > 0) {
+            sum.textContent = '正在测试 ' + (total - left) + '/' + total + ' …';
+            btn.textContent = '测试中 ' + (total - left) + '/' + total;
+          } else {
+            testAllBusy[cfg.key] = false;
+            btn.disabled = false; btn.textContent = '一键测试';
+            var avg = msCount ? Math.round(sumMs / msCount) : 0;
+            sum.textContent = '完成：' + okCount + '/' + total + ' 个正常'
+              + (msCount ? ' · 平均 ' + avg + ' ms' : '')
+              + ' · 各源耗时见上方每行';
+          }
+        });
+      })(i);
+    }
+  }
+  on($('btnTestAll'), 'click', function () {
+    runTestAll({ key: 'src', items: function () { return sources; }, ui: function () { return srcUi; },
+      probe: probeSrc, btn: 'btnTestAll', sum: 'srcTestSummary',
+      rowSel: '#srcList .srcrow', empty: '还没有点播源' });
+  });
+  on($('btnTestAllLive'), 'click', function () {
+    runTestAll({ key: 'live', items: function () { return liveSubs; }, ui: function () { return liveUi; },
+      probe: probeLive, btn: 'btnTestAllLive', sum: 'liveTestSummary',
+      rowSel: '#liveSubsList .srcrow', empty: '还没有直播源' });
+  });
+
+
+  // ---- 分组管理（v70）：显示 / 隐藏直播分组，两版共用同一套 /api/live-groups ----
+  var grpAll = [];        // [{name, count, hidden}]
+  var grpLoaded = false;
+  function grpRender() {
+    var box = $('grpList');
+    if (!box) return;
+    var q = (($('grpSearch').value || '').trim()).toLowerCase();
+    box.innerHTML = '';
+    var shown = 0;
+    for (var i = 0; i < grpAll.length; i++) {
+      (function (idx) {
+        var g = grpAll[idx];
+        if (q && g.name.toLowerCase().indexOf(q) < 0) return;
+        shown++;
+        var row = document.createElement('div');
+        row.className = 'srcrow grp-row' + (g.hidden ? ' off' : '');
+        row.setAttribute('data-row', idx);
+        row.innerHTML =
+          '<div class="line">' +
+            '<div class="nm"><b>' + esc(g.name) + '</b>' +
+              '<span class="ms">' + (g.count || 0) + ' 频道</span></div>' +
+            '<button class="mini ' + (g.hidden ? 'off' : 'on') + '" data-act="toggle" data-i="' + idx + '">' +
+              (g.hidden ? '已隐藏' : '已显示') + '</button>' +
+          '</div>';
+        box.appendChild(row);
+      })(i);
+    }
+    if (!grpAll.length) box.innerHTML = '<div class="empty">还没有分组，点「重新读取分组」试试</div>';
+    else if (!shown) box.innerHTML = '<div class="empty">没有匹配的分组</div>';
+    var hid = 0;
+    for (var k = 0; k < grpAll.length; k++) if (grpAll[k].hidden) hid++;
+    $('grpSummary').textContent = '共 ' + grpAll.length + ' 个分组 · 已隐藏 ' + hid + ' 个';
+    var acts = box.querySelectorAll('[data-act]');
+    for (var m = 0; m < acts.length; m++) {
+      on(acts[m], 'click', function (e) {
+        var t = e.target || e;
+        var el = (t.getAttribute && t.getAttribute('data-act')) ? t : t.parentNode;
+        var idx = parseInt(el.getAttribute('data-i'), 10);
+        if (!grpAll[idx]) return;
+        grpAll[idx].hidden = !grpAll[idx].hidden;
+        var msg = $('grpMsg'); if (msg) msg.style.display = 'none';
+        grpRender();
+      });
+    }
+  }
+  function grpLoad(silent) {
+    if (!silent) $('grpMsg').style.display = 'none';
+    req('GET', '/api/live-groups', null, function (d) {
+      if (!d || !d.ok) {
+        if (!silent) toast('读取分组失败，检查与电视的连接');
+        return;
+      }
+      grpAll = [];
+      var arr = d.groups || [];
+      for (var i = 0; i < arr.length; i++) {
+        var g = arr[i];
+        grpAll.push({ name: g.name || '', count: g.count || 0, hidden: !!g.hidden });
+      }
+      grpLoaded = true;
+      grpRender();
+      var msg = $('grpMsg');
+      if (d.hint && !silent) { msg.textContent = d.hint; msg.style.display = 'block'; }
+    });
+  }
+  function grpSetAll(hidden) {
+    for (var i = 0; i < grpAll.length; i++) grpAll[i].hidden = hidden;
+    var msg = $('grpMsg'); if (msg) msg.style.display = 'none';
+    grpRender();
+  }
+  on($('grpSearch'), 'input', grpRender);
+  on($('grpShowAll'), 'click', function () { grpSetAll(false); });
+  on($('grpHideAll'), 'click', function () { grpSetAll(true); });
+  on($('grpReload'), 'click', function () { grpLoad(false); });
+  on($('grpSave'), 'click', function () {
+    var hidden = [];
+    for (var i = 0; i < grpAll.length; i++) if (grpAll[i].hidden) hidden.push(grpAll[i].name);
+    req('POST', '/api/live-groups', { hidden: hidden }, function (d) {
+      var msg = $('grpMsg');
+      msg.style.display = 'block';
+      msg.textContent = (d && d.ok)
+        ? ('已保存：隐藏 ' + hidden.length + ' 个分组，返回 IPTV 直播即生效')
+        : ('保存失败：' + ((d && d.error) || '请重试'));
+      if (d && d.ok) { toast('分组设置已保存'); }
+    });
+  });
+
+
+  // ---- 全局主题色（v72）：5 套，只换强调色/按钮/选中态/高亮，浅底与排版不变 ----
+  var THEME_LIST = ['ember', 'mint', 'ocean', 'violet', 'rose'];
+  var THEME_LABEL = { ember: '暖橙（经典）', mint: '青绿', ocean: '海蓝', violet: '紫罗兰', rose: '玫红' };
+  function applyTheme(t) {
+    if (THEME_LIST.indexOf(t) < 0) t = 'ember';
+    document.documentElement.setAttribute('data-theme', t);
+    var v = $('themeVal'); if (v) v.textContent = THEME_LABEL[t];
+    var bs = document.querySelectorAll('.theme-pick');
+    for (var i = 0; i < bs.length; i++)
+      bs[i].className = 'theme-pick' + (bs[i].getAttribute('data-t') === t ? ' on' : '');
+  }
+  function saveTheme(t) {
+    applyTheme(t);   // 本地立刻生效，不等回包
+    req('POST', '/api/config', { theme: t }, function (d) {
+      // /api/config 按字段合并：只带 theme 不会冲掉其它设置。
+      // 服务端同时即时推送给首页 WebView，三处页面一起换色。
+      toast((d && d.error) ? ('主题保存失败：' + d.error) : ('已切换：' + THEME_LABEL[t] + ' · 全局生效'));
+    });
+  }
+
+  // ---- 背景明暗（v73）：暗色 = 历版深色底，亮色 = 白底深字；两版三页全局 ----
+  var MODE_LIST = ['dark', 'light'];
+  var MODE_LABEL = { dark: '深色', light: '亮色' };
+  function applyMode(m) {
+    if (MODE_LIST.indexOf(m) < 0) m = 'dark';
+    document.documentElement.setAttribute('data-mode', m);
+    var v = $('modeVal'); if (v) v.textContent = MODE_LABEL[m] + '背景';
+    var bs = document.querySelectorAll('.mode-pick');
+    for (var i = 0; i < bs.length; i++)
+      bs[i].className = 'mode-pick' + (bs[i].getAttribute('data-m') === m ? ' on' : '');
+  }
+  function saveMode(m) {
+    applyMode(m);   // 本地立刻生效；服务端同时即时推送给首页 WebView
+    req('POST', '/api/config', { mode: m }, function (d) {
+      toast((d && d.error) ? ('保存失败：' + d.error)
+                           : ('已切换：' + MODE_LABEL[m] + '背景 · 全局生效'));
+    });
+  }
+  var modePicks = document.querySelectorAll('.mode-pick');
+  for (var mi = 0; mi < modePicks.length; mi++) {
+    on(modePicks[mi], 'click', (function (el) {
+      return function () { saveMode(el.getAttribute('data-m')); };
+    })(modePicks[mi]));
+  }
+
+  var themePicks = document.querySelectorAll('.theme-pick');
+  for (var ti = 0; ti < themePicks.length; ti++) {
+    on(themePicks[ti], 'click', (function (el) {
+      return function () { saveTheme(el.getAttribute('data-t')); };
+    })(themePicks[ti]));
+  }
+
+  // ---- 保存
+  on($('btnSave'), 'click', function () {
+    // 先保存普通配置，再单独保存直播源（多源 + 启停），两者都同步到电视
+    var cfgBody = {
+      sources: sources,
+      skipIntro: parseInt($('skipIntro').value, 10) || 0,
+      skipOutro: parseInt($('skipOutro').value, 10) || 0,
+      filterAdult: filterAdult,
+      playEngine: $('playEngine').value,
+      liveDecodeMode: $('liveDecodeMode').value,
+      vodAspect: $('vodAspect').value,
+      liveAspect: $('liveAspect').value,
+      startupPage: $('startupPage').value,
+      liveUiScale: clampPct($('liveUiScale').value),
+      epgFontScale: clampPct($('epgFontScale').value)
+    };
+    req('POST', '/api/config', cfgBody, function (d) {
+      if (d && d.error) { toast(d.error); return; }
+      var cleanSubs = [];
+      for (var i = 0; i < liveSubs.length; i++) {
+        var s = liveSubs[i];
+        if (!s.name.trim() || !s.url.trim()) continue;
+        cleanSubs.push({ name: s.name.trim(), url: s.url.trim(), enabled: !!s.enabled });
+      }
+      req('POST', '/api/live-subs', { subs: cleanSubs }, function (r) {
+        if (r && r.error) { toast('直播源保存失败：' + r.error); return; }
+        toast('已保存并同步（直播源 ' + cleanSubs.length + ' 个）');
+        req('POST', '/api/push', { action: 'config' }, function () {});
+        setTimeout(loadConfig, 400);
+      });
+    });
+  });
+  on($('btnReload'), 'click', function () { loadConfig(); toast('已重新载入'); });
+
+  // ---- 清除电视缓存
+  on($('btnClearTv'), 'click', function () {
+    if (!window.confirm('确定清除电视端的播放记录与网络缓存？\n（不影响片源列表和跳过设置）')) return;
+    req('POST', '/api/push', { action: 'clearcache' }, function (d) {
+      if (d && d.ok) toast('已发送清除指令，电视端稍后自动刷新');
+      else toast('连接电视失败，确认同一 WiFi');
+    });
+  });
+
+  // ---- 搜索
+  var curList = [];
+  var curSrc = {};   // 每个结果当前选中的源下标
+  /** 构造当前选中源对应的 item（不改原始数据，方便来回切换） */
+  function effectiveItem(idx) {
+    var it = curList[idx];
+    var sv = (it.sources && it.sources.length) ? it.sources[curSrc[idx] || 0] : null;
+    if (!sv) return it;
+    var o = {};
+    for (var k in it) if (it.hasOwnProperty(k)) o[k] = it[k];
+    o.sourceKey = sv.sourceKey;
+    o.vodId = sv.vodId;
+    o.sourceName = sv.sourceName || o.sourceName;
+    if (sv.pic) o.pic = sv.pic;
+    return o;
+  }
+  on($('btnSearch'), 'click', doSearch);
+  on($('q'), 'keydown', function (e) { if (e.keyCode === 13) doSearch(); });
+
+  function doSearch() {
+    var wd = $('q').value.replace(/^\s+|\s+$/g, '');
+    if (!wd) { toast('请输入片名'); return; }
+    var box = $('resList');
+    box.innerHTML = '<div class="empty">搜索中…</div>';
+    $('resEmpty').style.display = 'none';
+    req('POST', '/api/search', { wd: wd, filterAdult: filterAdult }, function (d) {
+      if (!d || d.error) {
+        box.innerHTML = '';
+        var e = $('resEmpty');
+        e.style.display = 'block';
+        e.innerHTML = esc((d && d.error) || '搜索失败，检查网络或片源');
+        return;
+      }
+      curList = d.list || [];
+      curSrc = {};
+      renderResults(curList);
+    });
+  }
+
+  function renderResults(list) {
+    var box = $('resList');
+    box.innerHTML = '';
+    if (!list.length) {
+      var e = $('resEmpty');
+      e.style.display = 'block';
+      e.innerHTML = '没有找到，试试别的关键词';
+      return;
+    }
+    for (var i = 0; i < list.length; i++) {
+      var it = list[i];
+      var div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML =
+        (it.pic ? '<img src="' + esc(it.pic) + '" onerror="this.style.display=\'none\'">' : '<div class="noimg">无封面</div>') +
+        '<div class="info"><div class="nm">' + esc(it.name) + '<span class="badge">' + ((parseInt(it.sourceCount, 10) || 1) > 1 ? it.sourceCount + ' 个片源' : esc(it.sourceName)) + '</span></div>' +
+        '<div class="mt">' + esc((it.typeName || '') + (it.year ? ' · ' + it.year : '') + (it.remarks ? ' · ' + it.remarks : '')) + '</div>' +
+        '<div class="srcbar" id="src_' + i + '"></div>' +
+        '<div class="epsbox" id="eps_' + i + '"></div></div>' +
+        '<div class="ops"><button class="btn sm" data-i="' + i + '">播放</button></div>';
+      box.appendChild(div);
+      // 多源：渲染源切换按钮
+      if (it.sources && it.sources.length > 1) {
+        curSrc[i] = curSrc[i] || 0;
+        var sb = $('src_' + i);
+        var lab = document.createElement('div');
+        lab.className = 'srclabel';
+        lab.textContent = '选择片源（' + it.sources.length + '）';
+        sb.appendChild(lab);
+        for (var s = 0; s < it.sources.length; s++) {
+          (function (idx, si, bar) {
+            var b = document.createElement('button');
+            b.textContent = it.sources[si].sourceName || ('源' + (si + 1));
+            if ((curSrc[idx] || 0) === si) b.className = 'cur';
+            on(b, 'click', function () {
+              if ((curSrc[idx] || 0) === si) return;
+              curSrc[idx] = si;
+              var btns2 = bar.getElementsByTagName('button');
+              for (var q = 0; q < btns2.length; q++) btns2[q].className = '';
+              b.className = 'cur';
+              // 重新取该源集数
+              var eb = $('eps_' + idx);
+              eb.innerHTML = '';
+              eb.className = 'epsbox on';
+              loadEps(idx, true);
+            });
+            bar.appendChild(b);
+          })(i, s, sb);
+        }
+      }
+      var btns = div.getElementsByTagName('button');
+      on(btns[0], 'click', (function (idx) {
+        return function () { loadEps(idx); };
+      })(i));
+    }
+    $('resEmpty').style.display = 'none';
+  }
+
+  function loadEps(idx, force) {
+    var it = effectiveItem(idx);
+    var box = $('eps_' + idx);
+    if (!box) return;
+    if (!force && box.className.indexOf('on') >= 0) { box.className = 'epsbox'; return; }
+    box.className = 'epsbox on';
+    box.innerHTML = '正在获取集数…';
+    req('GET', '/api/detail?k=' + encodeURIComponent(it.sourceKey) + '&id=' + encodeURIComponent(it.vodId),
+      null, function (d) {
+        if (!d || d.error || !d.episodes || !d.episodes.length) {
+          box.innerHTML = '<div style="color:var(--n-ff8a6b,#ff8a6b);font-size:13px">这个源没有可用播放地址；可在上方「选择片源」切换其它源</div>';
+          return;
+        }
+        var eps = d.episodes;
+        var html = '<div class="epsgrid">';
+        for (var i = 0; i < eps.length; i++) {
+          html += '<button data-i="' + i + '">第' + (i + 1) + '集</button>';
+        }
+        html += '</div>';
+        box.innerHTML = html;
+        var bs = box.getElementsByTagName('button');
+        for (var j = 0; j < bs.length; j++) {
+          on(bs[j], 'click', (function (ei) {
+            return function () { pushPlay(it, ei); };
+          })(j));
+        }
+      });
+  }
+
+  function pushPlay(it, index) {
+    req('POST', '/api/push', { action: 'play', item: it, index: index }, function (d) {
+      if (d && d.error) { toast(d.error); return; }
+      toast('已发送到电视：' + it.name + ' 第' + (index + 1) + '集');
+    });
+  }
+
+  /* ==== SMB:START 网盘配置（与电视首页共用 /api/smb） ==== */
+  var smbArr = [], smbEditId = '';
+  function loadSmb() {
+    req('GET', '/api/smb', null, function (d) {
+      smbArr = (d && d.shares) || [];
+      var h = '';
+      if (!smbArr.length) h = '<div class="empty">还没有添加 SMB 网盘<br>在下面填写后点「保存网盘」</div>';
+      for (var i = 0; i < smbArr.length; i++) {
+        var s = smbArr[i];
+        h += '<div class="srcrow"><div class="line">' +
+               '<div class="nm"><b>' + esc(s.name || s.host) + '</b>' +
+               '<span class="badge">' + esc(s.host) +
+                 (s.port && s.port !== 445 ? ':' + s.port : '') + ' / ' + esc(s.share) + '</span></div>' +
+               '<button class="btn gray sm" data-smb-edit="' + esc(s.id) + '">编辑</button>' +
+               '<button class="btn gray sm" data-smb-del="' + esc(s.id) + '" style="margin-left:6px">删除</button>' +
+             '</div>' +
+             '<div class="hint" style="margin:0">' + esc(s.user || '匿名') +
+               (s.hasPass ? ' · 已设密码' : '') + ' · 起始目录 ' + esc(s.root || '/') + '</div></div>';
+      }
+      var box = $('smbList');
+      box.innerHTML = h;
+      box.onclick = function (e) {
+        var t = e.target; if (!t || !t.closest) return;
+        var ed = t.closest('[data-smb-edit]');
+        if (ed) { smbFill(ed.getAttribute('data-smb-edit')); return; }
+        var dl = t.closest('[data-smb-del]');
+        if (dl) smbDel(dl.getAttribute('data-smb-del'));
+      };
+    });
+  }
+  function smbFill(id) {
+    var s = null;
+    for (var i = 0; i < smbArr.length; i++) if (smbArr[i].id === id) s = smbArr[i];
+    smbEditId = id || '';
+    $('msTitle').textContent = s ? '编辑 SMB 网盘' : '添加 SMB 网盘';
+    $('msName').value = s ? (s.name || '') : '';
+    $('msHost').value = s ? (s.host || '') : '';
+    $('msPort').value = s ? (s.port || 445) : 445;
+    $('msShare').value = s ? (s.share || '') : '';
+    $('msDomain').value = s ? (s.domain || '') : '';
+    $('msUser').value = s ? (s.user || '') : '';
+    $('msPass').value = '';
+    $('msRoot').value = s ? (s.root || '/') : '/';
+    $('msMsg').textContent = (s && s.hasPass) ? '密码已保存，留空表示不修改' : '';
+  }
+  function smbSave() {
+    var host = $('msHost').value.replace(/^\s+|\s+$/g, '');
+    var sh = $('msShare').value.replace(/^\s+|\s+$/g, '');
+    if (!host) { $('msMsg').textContent = '服务器地址不能为空'; return; }
+    if (!sh) { $('msMsg').textContent = '共享名不能为空'; return; }
+    var share = {
+      name: $('msName').value.replace(/^\s+|\s+$/g, ''),
+      host: host, port: parseInt($('msPort').value, 10) || 445, share: sh,
+      domain: $('msDomain').value.replace(/^\s+|\s+$/g, ''),
+      user: $('msUser').value.replace(/^\s+|\s+$/g, ''),
+      pass: $('msPass').value,
+      root: $('msRoot').value.replace(/^\s+|\s+$/g, '') || '/'
+    };
+    $('msMsg').textContent = '保存中…';
+    req('POST', '/api/smb', { action: smbEditId ? 'update' : 'add', id: smbEditId, share: share }, function (d) {
+      if (!d || !d.ok) { $('msMsg').textContent = (d && d.error) || '保存失败'; return; }
+      smbFill(''); loadSmb(); toast('已保存');
+      $('msMsg').textContent = '已保存，电视首页「SMB 网盘」会自动同步';
+    });
+  }
+  function smbDel(id) {
+    if (!window.confirm('确定删除这个 SMB 网盘？')) return;
+    req('POST', '/api/smb', { action: 'del', id: id }, function (d) {
+      if (!d || !d.ok) { toast((d && d.error) || '删除失败'); return; }
+      smbFill(''); loadSmb(); toast('已删除');
+    });
+  }
+  on($('btnSmbSave'), 'click', smbSave);
+  on($('btnSmbReset'), 'click', function () { smbFill(''); });
+  /* ==== SMB:END ==== */
+
+  // 启动
+  loadConfig();
+  smbFill('');
+})();
+</script>
+
+<script>
+// 本文件只打包进手机版（phone flavor），无需再按 /api/status 判定。
+// MainActivity 把返回键交给 window.__onBack；设置页没有首页那套返回栈，
+// 以前这里没定义 __onBack，按返回就什么都不发生 —— 现在直接回首页。
+(function () {
+  document.body.classList.add('phone');
+  document.title = '设置';
+  function goHome() { location.href = '/?tv=1'; }
+  window.__onBack = goHome;
+  var bh = document.getElementById('backHome');
+  if (bh) bh.addEventListener('click', goHome, false);
+})();
+</script>
+</body>
+</html>

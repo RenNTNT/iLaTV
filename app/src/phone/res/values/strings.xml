@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 手机版桌面名称；电视版沿用 main 里的「iLaTV 电视版」 -->
+    <string name="app_name">iLaTV</string>
+</resources>

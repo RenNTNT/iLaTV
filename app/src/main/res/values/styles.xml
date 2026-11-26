@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorPrimary">#0a6cff</item>
+        <item name="android:colorPrimaryDark">#000000</item>
+        <item name="android:colorAccent">#0a6cff</item>
+    </style>
+</resources>

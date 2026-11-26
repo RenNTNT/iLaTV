@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+    <!-- 手机版首页竖屏；播放器 / 直播页仍沿用 main 里的横屏声明 -->
+    <application>
+        <activity
+            android:name="com.ilatv.tv.MainActivity"
+            android:screenOrientation="portrait"
+            tools:replace="screenOrientation" />
+    </application>
+</manifest>
